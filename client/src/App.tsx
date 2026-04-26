@@ -5,14 +5,30 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
+import CognitiveLayers from "./pages/CognitiveLayers";
+import AgentPanel from "./pages/AgentPanel";
+import CircuitMonitor from "./pages/CircuitMonitor";
+import BatteryPanel from "./pages/BatteryPanel";
+import Simulation from "./pages/Simulation";
+import TurnBotPanel from "./pages/TurnBotPanel";
+import AIChatPage from "./pages/AIChatPage";
+import AlertsPage from "./pages/AlertsPage";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/layers" component={CognitiveLayers} />
+      <Route path="/agents" component={AgentPanel} />
+      <Route path="/circuits" component={CircuitMonitor} />
+      <Route path="/battery" component={BatteryPanel} />
+      <Route path="/simulation" component={Simulation} />
+      <Route path="/turnbot" component={TurnBotPanel} />
+      <Route path="/chat" component={AIChatPage} />
+      <Route path="/alerts" component={AlertsPage} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -26,10 +42,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
           <Router />
