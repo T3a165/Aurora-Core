@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/Layout.tsx","./src/lib/seed.ts","./src/pages/AIChat.tsx","./src/pages/AgentPanel.tsx","./src/pages/Alerts.tsx","./src/pages/BatteryPanel.tsx","./src/pages/CircuitMonitor.tsx","./src/pages/CognitiveLayers.tsx","./src/pages/Dashboard.tsx","./src/pages/Simulation.tsx","./src/pages/TurnBotPanel.tsx"],"version":"5.9.3"}
