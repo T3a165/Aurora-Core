@@ -1,10 +1,12 @@
 import AuroraDashboardLayout from "@/components/AuroraDashboardLayout";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Cpu, BarChart3, TrendingUp, Heart, Zap, RefreshCw } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Cpu, BarChart3, TrendingUp, Heart, Zap, RefreshCw, SlidersHorizontal, Play, RotateCcw, ChevronDown, ChevronUp, Brain, Loader2 } from "lucide-react";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 
 const SCENARIOS = [
   {
@@ -63,9 +65,26 @@ const SCENARIOS = [
   },
 ];
 
+const DEFAULT_PARAMS = {
+  confidenceThreshold: 75,
+  savingsTarget: 50,
+  priorityWeights: {
+    cost: 70,
+    comfort: 60,
+    health: 80,
+    grid: 50,
+    batteryLife: 65,
+  },
+};
+
 export default function Simulation() {
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Record<string, string>>({});
+  const [showTuning, setShowTuning] = useState(false);
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [selectedScenarioForParams, setSelectedScenarioForParams] = useState<string>("peak-shave");
+  const [paramResult, setParamResult] = useState<string | null>(null);
+
   const analyzeMutation = trpc.simulation.analyze.useMutation({
     onSuccess: (data, variables) => {
       const analysisText = typeof data.analysis === "string" ? data.analysis : String(data.analysis);
@@ -73,6 +92,30 @@ export default function Simulation() {
     },
     onError: () => toast.error("Analysis failed"),
   });
+
+  const analyzeWithParamsMutation = trpc.simulation.analyzeWithParams.useMutation({
+    onSuccess: (data) => {
+      const content = typeof data.analysis === "string" ? data.analysis : "Analysis unavailable.";
+      setParamResult(content);
+    },
+    onError: () => toast.error("Parameterized analysis failed"),
+  });
+
+  const runParameterizedAnalysis = useCallback(() => {
+    const scenario = SCENARIOS.find(s => s.id === selectedScenarioForParams);
+    if (!scenario) return;
+    setParamResult(null);
+    analyzeWithParamsMutation.mutate({
+      scenario: scenario.name,
+      confidenceThreshold: params.confidenceThreshold,
+      savingsTarget: params.savingsTarget,
+      priorityWeights: params.priorityWeights,
+    });
+  }, [analyzeWithParamsMutation, selectedScenarioForParams, params]);
+
+  const updateWeight = (key: keyof typeof DEFAULT_PARAMS.priorityWeights, value: number[]) => {
+    setParams(p => ({ ...p, priorityWeights: { ...p.priorityWeights, [key]: value[0] } }));
+  };
 
   const scenario = SCENARIOS.find(s => s.id === activeScenario);
 
@@ -200,6 +243,156 @@ export default function Simulation() {
               </div>
             );
           })}
+        </div>
+
+        {/* ── Monte Carlo Parameter Tuning (v2) ── */}
+        <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 overflow-hidden">
+          <button
+            className="w-full flex items-center justify-between p-4 hover:bg-purple-500/10 transition-colors"
+            onClick={() => setShowTuning(!showTuning)}
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-purple-400" />
+              <span className="font-semibold text-foreground text-sm">Monte Carlo Parameter Tuning</span>
+              <span className="text-xs text-purple-400 font-mono px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/30">v2</span>
+            </div>
+            {showTuning ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          </button>
+
+          {showTuning && (
+            <div className="px-4 pb-4 space-y-5 border-t border-purple-500/20">
+              <p className="text-xs text-muted-foreground pt-3">
+                Adjust simulation parameters to customize how Aurora Core weighs tradeoffs. The LLM analysis will incorporate your exact settings, including confidence threshold, savings target, and priority weights.
+              </p>
+
+              {/* Scenario selector */}
+              <div>
+                <label className="text-xs font-semibold text-foreground/80 block mb-2">Target Scenario</label>
+                <div className="flex gap-2 flex-wrap">
+                  {SCENARIOS.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedScenarioForParams(s.id)}
+                      className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-medium ${
+                        selectedScenarioForParams === s.id
+                          ? "border-current/60 bg-current/15"
+                          : "border-border/30 text-muted-foreground hover:border-border/60"
+                      }`}
+                      style={selectedScenarioForParams === s.id ? { color: s.color } : {}}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Confidence threshold */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-foreground/80">Confidence Threshold</label>
+                  <span className="text-xs font-mono text-purple-400">{params.confidenceThreshold}%</span>
+                </div>
+                <Slider
+                  min={50} max={99} step={1}
+                  value={[params.confidenceThreshold]}
+                  onValueChange={v => setParams(p => ({ ...p, confidenceThreshold: v[0] }))}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Only recommend actions with confidence above this threshold.</p>
+              </div>
+
+              {/* Savings target */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-foreground/80">Monthly Savings Target</label>
+                  <span className="text-xs font-mono text-green-400">${params.savingsTarget}</span>
+                </div>
+                <Slider
+                  min={10} max={500} step={5}
+                  value={[params.savingsTarget]}
+                  onValueChange={v => setParams(p => ({ ...p, savingsTarget: v[0] }))}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Target monthly energy savings in USD.</p>
+              </div>
+
+              {/* Priority weights */}
+              <div>
+                <label className="text-xs font-semibold text-foreground/80 block mb-3">Priority Weights</label>
+                <div className="space-y-3">
+                  {(
+                    [
+                      { key: "cost",        label: "Cost Savings",  color: "#f59e0b" },
+                      { key: "comfort",     label: "Comfort",       color: "#06b6d4" },
+                      { key: "health",      label: "Health",        color: "#a855f7" },
+                      { key: "grid",        label: "Grid Benefit",  color: "#22c55e" },
+                      { key: "batteryLife", label: "Battery Life",  color: "#f97316" },
+                    ] as const
+                  ).map(({ key, label, color }) => (
+                    <div key={key} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-24 shrink-0">{label}</span>
+                      <div className="flex-1">
+                        <Slider
+                          min={0} max={100} step={5}
+                          value={[params.priorityWeights[key]]}
+                          onValueChange={v => updateWeight(key, v)}
+                          className="w-full"
+                        />
+                      </div>
+                      <span className="text-xs font-mono w-8 text-right" style={{ color }}>{params.priorityWeights[key]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action row */}
+              <div className="flex items-center gap-2 pt-1">
+                <Button
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold flex-1"
+                  onClick={runParameterizedAnalysis}
+                  disabled={analyzeWithParamsMutation.isPending}
+                >
+                  {analyzeWithParamsMutation.isPending ? (
+                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Running simulation...</>
+                  ) : (
+                    <><Play className="h-3.5 w-3.5 mr-1.5" /> Run Parameterized Analysis</>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border/40 text-muted-foreground"
+                  onClick={() => { setParams(DEFAULT_PARAMS); setParamResult(null); }}
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                  Reset
+                </Button>
+              </div>
+
+              {/* Parameterized result */}
+              {(analyzeWithParamsMutation.isPending || paramResult) && (
+                <div className="rounded-lg border border-purple-500/30 bg-purple-500/5 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="h-3.5 w-3.5 text-purple-400" />
+                    <span className="text-xs font-semibold text-purple-400">
+                      {SCENARIOS.find(s => s.id === selectedScenarioForParams)?.name} — Custom Parameters
+                    </span>
+                  </div>
+                  {analyzeWithParamsMutation.isPending ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin text-purple-400" />
+                      <span className="text-xs">Monte Carlo engine processing your parameters...</span>
+                    </div>
+                  ) : paramResult ? (
+                    <div className="text-xs text-foreground/80 prose prose-sm prose-invert max-w-none">
+                      <Streamdown>{paramResult}</Streamdown>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Simulation summary */}

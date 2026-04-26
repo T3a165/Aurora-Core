@@ -30,6 +30,16 @@
 - [x] Alerts management page with filter, resolve, and owner notification note
 
 ## Testing
-- [x] Vitest tests for routers (18 tests, all passing)
+- [x] Vitest tests for routers (24 tests, all passing)
 - [x] Auth flow tests
 - [x] TypeScript: 0 errors
+
+## v2 Features
+- [x] README.md added to GitHub repo
+- [x] Skill extended with /api/ingest webhook pattern
+- [x] OTA firmware schema migration (otaStatus, otaProgress, otaTargetVersion columns on turnbot_devices)
+- [x] TurnBot OTA firmware update UI (per-device OTA initiate, progress bar, status badge)
+- [x] tRPC turnbot.initiateOta and turnbot.updateOtaStatus procedures
+- [x] Monte Carlo parameter tuning sliders on Simulation page (confidence threshold, savings target, priority weights)
+- [x] tRPC simulation.analyzeWithParams procedure for parameterized LLM analysis
+- [x] v2 GitHub branch pushed

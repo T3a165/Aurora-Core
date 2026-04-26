@@ -171,6 +171,32 @@ export async function toggleTurnbotDevice(deviceId: string, isActive: boolean) {
   await db.update(turnbotDevices).set({ isActive }).where(eq(turnbotDevices.deviceId, deviceId));
 }
 
+export async function initiateOta(deviceId: string, targetVersion: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(turnbotDevices)
+    .set({ otaStatus: "pending", otaProgress: 0, otaTargetVersion: targetVersion, otaStartedAt: new Date() })
+    .where(eq(turnbotDevices.deviceId, deviceId));
+}
+
+export async function updateOtaProgress(deviceId: string, status: "idle" | "pending" | "downloading" | "installing" | "success" | "failed", progress: number) {
+  const db = await getDb();
+  if (!db) return;
+  const updateData: Record<string, unknown> = { otaStatus: status, otaProgress: progress };
+  if (status === "success") {
+    // On success, promote otaTargetVersion to firmwareVersion
+    const device = await db.select().from(turnbotDevices).where(eq(turnbotDevices.deviceId, deviceId)).limit(1);
+    if (device[0]?.otaTargetVersion) {
+      updateData.firmwareVersion = device[0].otaTargetVersion;
+      updateData.otaTargetVersion = null;
+    }
+  }
+  if (status === "idle" || status === "success" || status === "failed") {
+    updateData.otaProgress = status === "success" ? 100 : progress;
+  }
+  await db.update(turnbotDevices).set(updateData as any).where(eq(turnbotDevices.deviceId, deviceId));
+}
+
 // ── Alerts ────────────────────────────────────────────────────────────────────
 
 export async function insertAlert(data: InsertAlertHistory) {

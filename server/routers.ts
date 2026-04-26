@@ -23,6 +23,8 @@ import {
   getAllTurnbotDevices,
   upsertTurnbotDevice,
   toggleTurnbotDevice,
+  initiateOta,
+  updateOtaProgress,
   getAlerts,
   insertAlert,
   resolveAlert,
@@ -160,6 +162,52 @@ const turnbotRouter = router({
     for (const d of devices) await upsertTurnbotDevice(d);
     return { seeded: devices.length };
   }),
+
+  initiateOta: protectedProcedure
+    .input(z.object({ deviceId: z.string(), targetVersion: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await initiateOta(input.deviceId, input.targetVersion);
+      await insertAgentLog({
+        agentId: "energy",
+        action: `OTA update initiated for ${input.deviceId}`,
+        details: `Target firmware: v${input.targetVersion}`,
+        confidence: 1.0,
+        hasConflict: false,
+      });
+      await insertAlert({
+        type: "device",
+        severity: "info",
+        title: `OTA Update Started: ${input.deviceId}`,
+        message: `Firmware update to v${input.targetVersion} initiated.`,
+      });
+      return { success: true };
+    }),
+
+  updateOtaStatus: protectedProcedure
+    .input(z.object({
+      deviceId: z.string(),
+      status: z.enum(["idle", "pending", "downloading", "installing", "success", "failed"]),
+      progress: z.number().min(0).max(100),
+    }))
+    .mutation(async ({ input }) => {
+      await updateOtaProgress(input.deviceId, input.status, input.progress);
+      if (input.status === "success") {
+        await insertAlert({
+          type: "device",
+          severity: "info",
+          title: `OTA Update Complete: ${input.deviceId}`,
+          message: `Firmware updated successfully.`,
+        });
+      } else if (input.status === "failed") {
+        await insertAlert({
+          type: "device",
+          severity: "warning",
+          title: `OTA Update Failed: ${input.deviceId}`,
+          message: `Firmware update failed at ${input.progress}% progress.`,
+        });
+      }
+      return { success: true };
+    }),
 });
 
 // ── Alerts ────────────────────────────────────────────────────────────────────
@@ -299,6 +347,54 @@ Include: probability estimate (%), estimated monthly savings ($), key actions re
       const response = await invokeLLM({
         messages: [
           { role: "system", content: "You are Aurora Core's AI simulation engine. Be concise and data-driven." },
+          { role: "user", content: prompt },
+        ],
+      });
+
+      return { analysis: response.choices[0]?.message?.content ?? "Analysis unavailable." };
+    }),
+
+  analyzeWithParams: protectedProcedure
+    .input(z.object({
+      scenario: z.string(),
+      confidenceThreshold: z.number().min(0).max(100),
+      savingsTarget: z.number().min(0).max(500),
+      priorityWeights: z.object({
+        cost: z.number().min(0).max(100),
+        comfort: z.number().min(0).max(100),
+        health: z.number().min(0).max(100),
+        grid: z.number().min(0).max(100),
+        batteryLife: z.number().min(0).max(100),
+      }),
+    }))
+    .mutation(async ({ input }) => {
+      const totalWeight = input.priorityWeights.cost + input.priorityWeights.comfort +
+        input.priorityWeights.health + input.priorityWeights.grid + input.priorityWeights.batteryLife;
+
+      const prompt = `You are Aurora Core's Monte Carlo Simulation Engine. Run a parameterized analysis for the following scenario with custom tuning parameters.
+
+Scenario: "${input.scenario}"
+
+Tuning Parameters:
+- Confidence Threshold: ${input.confidenceThreshold}% (only recommend actions above this confidence level)
+- Monthly Savings Target: $${input.savingsTarget}
+- Priority Weights (total: ${totalWeight}):
+  * Cost Savings: ${input.priorityWeights.cost}
+  * Comfort: ${input.priorityWeights.comfort}
+  * Health: ${input.priorityWeights.health}
+  * Grid Benefit: ${input.priorityWeights.grid}
+  * Battery Life: ${input.priorityWeights.batteryLife}
+
+Provide a 3-paragraph analysis:
+1. Probability assessment given the confidence threshold
+2. Whether the savings target is achievable and by what margin
+3. Recommended action plan weighted by the priority settings above
+
+Be specific with numbers and percentages.`;
+
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are Aurora Core's AI Monte Carlo simulation engine. Provide precise, data-driven analysis." },
           { role: "user", content: prompt },
         ],
       });

@@ -68,6 +68,10 @@ export const turnbotDevices = mysqlTable("turnbot_devices", {
   position: float("position").default(0).notNull(),
   batteryLevel: float("batteryLevel").default(100).notNull(),
   firmwareVersion: varchar("firmwareVersion", { length: 32 }).default("1.0.0").notNull(),
+  otaStatus: mysqlEnum("otaStatus", ["idle", "pending", "downloading", "installing", "success", "failed"]).default("idle").notNull(),
+  otaProgress: float("otaProgress").default(0).notNull(),
+  otaTargetVersion: varchar("otaTargetVersion", { length: 32 }),
+  otaStartedAt: timestamp("otaStartedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

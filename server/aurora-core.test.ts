@@ -212,3 +212,91 @@ describe("agents", () => {
     expect(result.success).toBe(true);
   });
 });
+
+// ── TurnBot OTA (v2) ──────────────────────────────────────────────────────────
+
+describe("turnbot OTA", () => {
+  it("initiateOta sets device to pending status", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    // Ensure device exists first
+    await caller.turnbot.seed();
+    const result = await caller.turnbot.initiateOta({ deviceId: "tb-mini-001", targetVersion: "1.3.0" });
+    expect(result.success).toBe(true);
+    // Verify the device now has pending OTA status
+    const devices = await caller.turnbot.list();
+    const mini = devices.find(d => d.deviceId === "tb-mini-001");
+    expect(mini?.otaStatus).toBe("pending");
+    expect(mini?.otaTargetVersion).toBe("1.3.0");
+  });
+
+  it("updateOtaStatus transitions to downloading", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    const result = await caller.turnbot.updateOtaStatus({ deviceId: "tb-mini-001", status: "downloading", progress: 45 });
+    expect(result.success).toBe(true);
+    const devices = await caller.turnbot.list();
+    const mini = devices.find(d => d.deviceId === "tb-mini-001");
+    expect(mini?.otaStatus).toBe("downloading");
+    expect(mini?.otaProgress).toBe(45);
+  });
+
+  it("updateOtaStatus success promotes firmware version", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    // First set target version
+    await caller.turnbot.initiateOta({ deviceId: "tb-pro-001", targetVersion: "2.1.0" });
+    const result = await caller.turnbot.updateOtaStatus({ deviceId: "tb-pro-001", status: "success", progress: 100 });
+    expect(result.success).toBe(true);
+    const devices = await caller.turnbot.list();
+    const pro = devices.find(d => d.deviceId === "tb-pro-001");
+    expect(pro?.firmwareVersion).toBe("2.1.0");
+    expect(pro?.otaStatus).toBe("success");
+  });
+
+  it("updateOtaStatus failed creates a warning alert", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    await caller.turnbot.updateOtaStatus({ deviceId: "tb-hub-001", status: "failed", progress: 30 });
+    const alerts = await caller.alerts.list();
+    const otaAlert = alerts.find(a => a.title.includes("OTA Update Failed") && a.message.includes("30%"));
+    expect(otaAlert).toBeDefined();
+    expect(otaAlert?.severity).toBe("warning");
+  });
+});
+
+// ── Simulation with params (v2) ───────────────────────────────────────────────
+
+describe("simulation.analyzeWithParams", () => {
+  it("returns an analysis string for Peak Shave with custom params", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    const result = await caller.simulation.analyzeWithParams({
+      scenario: "Peak Shave",
+      confidenceThreshold: 80,
+      savingsTarget: 60,
+      priorityWeights: {
+        cost: 80,
+        comfort: 50,
+        health: 70,
+        grid: 60,
+        batteryLife: 65,
+      },
+    });
+    expect(typeof result.analysis).toBe("string");
+    expect(result.analysis.length).toBeGreaterThan(20);
+  }, 30_000);
+
+  it("returns an analysis string for Wellness Priority with health-focused params", async () => {
+    const caller = appRouter.createCaller(makeCtx());
+    const result = await caller.simulation.analyzeWithParams({
+      scenario: "Wellness Priority",
+      confidenceThreshold: 90,
+      savingsTarget: 20,
+      priorityWeights: {
+        cost: 30,
+        comfort: 90,
+        health: 100,
+        grid: 20,
+        batteryLife: 70,
+      },
+    });
+    expect(typeof result.analysis).toBe("string");
+    expect(result.analysis.length).toBeGreaterThan(20);
+  }, 30_000);
+});
