@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aurora
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  mock-oauth:
+    build: ./mock-oauth
+    ports:
+      - "4000:4000"
+
+  server:
+    build: ./server
+    environment:
+      DATABASE_URL: mysql://root:root@db:3306/aurora
+      OAUTH_URL: http://mock-oauth:4000
+    depends_on:
+      - db
+      - mock-oauth
+    ports:
+      - "8787:8787"
+
+  client:
+    build: ./client
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
