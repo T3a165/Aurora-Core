@@ -105,3 +105,13 @@ body {
 
 /* Monospace numbers */
 .mono { font-family: var(--font-mono); }
+
+/* iPhone safe areas */
+.safe-top    { padding-top:    env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Mobile tap targets */
+@media (max-width: 768px) {
+  .card { border-radius: 12px; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+}
