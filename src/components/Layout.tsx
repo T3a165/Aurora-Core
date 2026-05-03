@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'wouter'
 import {
-  LayoutDashboard, Layers, Brain, Zap, Battery,
-  FlaskConical, Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
-  Activity, Menu, X, Heart,
+  LayoutDashboard, Layers, Brain, Zap, Battery, FlaskConical,
+  Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
+  Activity, Menu, X, Heart, BookOpen,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { AuroraBackground } from './AuroraBackground'
+import { DataTicker } from './DataTicker'
+import { useRealtime } from '../lib/useRealtime'
 
 const NAV = [
   { path: '/',             icon: LayoutDashboard, label: 'Dashboard'   },
@@ -17,123 +20,142 @@ const NAV = [
   { path: '/turnbot',      icon: Radio,           label: 'TurnBot'     },
   { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'     },
   { path: '/alerts',       icon: Bell,            label: 'Alerts'      },
+  { path: '/manifesto',    icon: BookOpen,        label: 'Manifesto',  divider: true },
   { path: '/legacy',       icon: Heart,           label: 'Legacy'      },
 ]
 
-const BOTTOM_PRIMARY = ['/', '/chat', '/agents', '/circuits', '/legacy']
+const BOTTOM_PRIMARY = ['/', '/chat', '/agents', '/legacy', '/manifesto']
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const [collapsed, setCollapsed] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const metrics = useRealtime()
 
   const isActive = (path: string) =>
     location === path || (path !== '/' && location.startsWith(path))
 
-  return (
-    <div className="flex h-screen overflow-hidden">
+  const navItemClass = (path: string) => clsx(
+    'flex items-center gap-3 px-2.5 py-2 rounded-lg font-medium transition-all duration-150 cursor-pointer',
+    isActive(path)
+      ? path === '/legacy' || path === '/manifesto'
+        ? 'bg-[oklch(0.85_0.20_0_/_0.12)] text-[oklch(0.90_0.18_0)] border border-[oklch(0.85_0.20_0_/_0.35)]'
+        : 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.35)]'
+      : path === '/legacy' || path === '/manifesto'
+        ? 'text-[oklch(0.65_0.14_0)] hover:text-[oklch(0.85_0.20_0)] hover:bg-[oklch(0.85_0.20_0_/_0.07)]'
+        : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]',
+  )
 
-      {/* Desktop sidebar */}
+  return (
+    <div className="flex h-screen overflow-hidden relative">
+      <AuroraBackground />
+
+      {/* ── Desktop sidebar ─────────────────────────────────────── */}
       <aside className={clsx(
-        'hidden md:flex flex-col flex-shrink-0 transition-all duration-300',
-        'bg-[var(--color-surface)] border-r border-[var(--color-border)]',
-        collapsed ? 'w-14' : 'w-52',
+        'hidden md:flex flex-col flex-shrink-0 transition-all duration-300 relative z-10',
+        'bg-[var(--color-surface)]/80 backdrop-blur-xl border-r border-[var(--color-border)]',
+        collapsed ? 'w-[52px]' : 'w-52',
       )}>
+        {/* Wordmark */}
         <div className="flex items-center gap-3 px-3 py-4 border-b border-[var(--color-border)]">
-          <div className="flex-shrink-0 w-8 h-8 rounded bg-[var(--color-elevated)] flex items-center justify-center glow-cyan">
+          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[oklch(0.82_0.16_196_/_0.10)] border border-[oklch(0.82_0.16_196_/_0.35)] flex items-center justify-center glow-cyan">
             <Activity className="w-4 h-4 text-[var(--color-cyan)]" />
           </div>
           {!collapsed && (
-            <div>
-              <div className="font-display font-bold text-sm text-[var(--color-cyan)] text-glow-cyan leading-tight">AURORA</div>
-              <div className="font-display text-[10px] text-[var(--color-muted)] tracking-[0.15em] uppercase leading-tight">CORE</div>
+            <div className="min-w-0">
+              <div className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan leading-tight tracking-wider">AURORA</div>
+              <div className="font-display text-[9px] text-[var(--color-dim)] tracking-[0.2em] uppercase leading-tight">CORE · McLain Systems</div>
             </div>
           )}
         </div>
 
+        {/* Nav items */}
         <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-1.5">
-          {NAV.map(({ path, icon: Icon, label }) => (
-            <Link key={path} href={path}>
-              <a className={clsx(
-                'flex items-center gap-3 px-2.5 py-2 rounded-md font-medium transition-all cursor-pointer',
-                path === '/legacy' ? 'mt-2 border-t border-[var(--color-border)] pt-3' : '',
-                isActive(path)
-                  ? 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
-                  : path === '/legacy'
-                    ? 'text-[oklch(0.70_0.20_0)] hover:text-[oklch(0.85_0.20_0)] hover:bg-[oklch(0.70_0.20_0_/_0.08)]'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]',
-              )}>
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span className="truncate font-display text-xs tracking-wide">{label}</span>}
-              </a>
-            </Link>
+          {NAV.map(({ path, icon: Icon, label, divider }) => (
+            <div key={path}>
+              {divider && <div className="h-px bg-[var(--color-border)] my-2 mx-2" />}
+              <Link href={path}>
+                <a className={navItemClass(path)}>
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {!collapsed && <span className="truncate font-display text-xs tracking-wide">{label}</span>}
+                </a>
+              </Link>
+            </div>
           ))}
         </nav>
 
+        {/* Collapse toggle */}
         <div className="p-2 border-t border-[var(--color-border)]">
           <button
             onClick={() => setCollapsed(c => !c)}
-            className="w-full flex items-center justify-center p-2 rounded-md text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)] transition-colors"
+            className="w-full flex items-center justify-center p-2 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)] transition-colors"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
       </aside>
 
-      {/* Desktop main */}
-      <main className="hidden md:block flex-1 overflow-y-auto bg-[var(--color-bg)] grid-overlay">
-        {children}
-      </main>
+      {/* ── Desktop main ─────────────────────────────────────────── */}
+      <div className="hidden md:flex flex-col flex-1 min-w-0 relative z-10">
+        <DataTicker metrics={metrics} />
+        <main className="flex-1 overflow-y-auto grid-overlay">
+          {children}
+        </main>
+      </div>
 
-      {/* Mobile shell */}
-      <div className="flex flex-col flex-1 min-w-0 md:hidden">
-        <header className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded bg-[var(--color-elevated)] flex items-center justify-center glow-cyan">
+      {/* ── Mobile shell ─────────────────────────────────────────── */}
+      <div className="flex flex-col flex-1 min-w-0 md:hidden relative z-10">
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)] flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[oklch(0.82_0.16_196_/_0.10)] border border-[oklch(0.82_0.16_196_/_0.35)] flex items-center justify-center">
               <Activity className="w-3.5 h-3.5 text-[var(--color-cyan)]" />
             </div>
-            <span className="font-display font-bold text-sm text-[var(--color-cyan)] text-glow-cyan tracking-wider">AURORA CORE</span>
+            <div>
+              <span className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan tracking-wider">AURORA CORE</span>
+            </div>
           </div>
-          <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-md text-[var(--color-muted)] active:bg-[var(--color-elevated)]">
+          <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-lg text-[var(--color-muted)] active:bg-[var(--color-elevated)]">
             <Menu className="w-5 h-5" />
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-[var(--color-bg)] grid-overlay pb-20">
+        {/* Live ticker */}
+        <DataTicker metrics={metrics} />
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto grid-overlay pb-20">
           {children}
         </main>
 
         {/* Bottom nav */}
-        <nav className="fixed bottom-0 inset-x-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-md border-t border-[var(--color-border)] md:hidden">
+        <nav className="fixed bottom-0 inset-x-0 z-40 bg-[var(--color-surface)]/90 backdrop-blur-xl border-t border-[var(--color-border)] md:hidden">
           <div className="flex items-stretch h-14" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             {BOTTOM_PRIMARY.map(path => {
               const item = NAV.find(n => n.path === path)!
               const Icon = item.icon
               const active = isActive(path)
-              const isLegacy = path === '/legacy'
+              const isSpecial = path === '/legacy' || path === '/manifesto'
               return (
                 <Link key={path} href={path}>
-                  <a
-                    onClick={() => setDrawerOpen(false)}
+                  <a onClick={() => setDrawerOpen(false)}
                     className={clsx(
                       'flex-1 flex flex-col items-center justify-center gap-0.5 px-1 transition-all active:scale-95',
                       active
-                        ? isLegacy ? 'text-[oklch(0.85_0.20_0)]' : 'text-[var(--color-cyan)]'
-                        : isLegacy ? 'text-[oklch(0.60_0.15_0)]' : 'text-[var(--color-muted)]',
+                        ? isSpecial ? 'text-[oklch(0.90_0.18_0)]' : 'text-[var(--color-cyan)]'
+                        : isSpecial ? 'text-[oklch(0.55_0.12_0)]' : 'text-[var(--color-muted)]',
                     )}
                   >
                     <Icon className="w-5 h-5" />
-                    <span className="text-[9px] font-display tracking-wide leading-none">{item.label}</span>
+                    <span className="text-[8px] font-display tracking-wide">{item.label}</span>
                   </a>
                 </Link>
               )
             })}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 px-1 text-[var(--color-muted)] active:scale-95"
-            >
+            <button onClick={() => setDrawerOpen(true)}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[var(--color-muted)] active:scale-95">
               <Menu className="w-5 h-5" />
-              <span className="text-[9px] font-display tracking-wide leading-none">More</span>
+              <span className="text-[8px] font-display tracking-wide">More</span>
             </button>
           </div>
         </nav>
@@ -142,26 +164,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {drawerOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-72 bg-[var(--color-surface)] border-l border-[var(--color-border)] flex flex-col">
+            <div className="absolute right-0 top-0 bottom-0 w-72 bg-[var(--color-surface)]/95 backdrop-blur-xl border-l border-[var(--color-border)] flex flex-col">
               <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
-                <span className="font-display font-bold text-sm text-[var(--color-cyan)] tracking-wider">AURORA CORE</span>
+                <div>
+                  <div className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan tracking-widest">AURORA CORE</div>
+                  <div className="mono text-[8px] text-[var(--color-dim)]">McLain Systems · v2.0</div>
+                </div>
                 <button onClick={() => setDrawerOpen(false)} className="p-1 text-[var(--color-muted)]"><X className="w-5 h-5" /></button>
               </div>
-              <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1">
-                {NAV.map(({ path, icon: Icon, label }) => {
-                  const isLegacy = path === '/legacy'
-                  return (
-                    <Link key={path} href={path}>
-                      <a
-                        onClick={() => setDrawerOpen(false)}
+              <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+                {NAV.map(({ path, icon: Icon, label, divider }) => (
+                  <div key={path}>
+                    {divider && <div className="h-px bg-[var(--color-border)] my-2 mx-1" />}
+                    <Link href={path}>
+                      <a onClick={() => setDrawerOpen(false)}
                         className={clsx(
-                          'flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all active:scale-98',
+                          'flex items-center gap-3 px-3 py-3 rounded-lg transition-all active:scale-[0.98]',
                           isActive(path)
-                            ? isLegacy
-                              ? 'bg-[oklch(0.70_0.20_0_/_0.15)] text-[oklch(0.85_0.20_0)] border border-[oklch(0.70_0.20_0_/_0.4)]'
+                            ? path === '/legacy' || path === '/manifesto'
+                              ? 'bg-[oklch(0.85_0.20_0_/_0.12)] text-[oklch(0.90_0.18_0)] border border-[oklch(0.85_0.20_0_/_0.35)]'
                               : 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
-                            : isLegacy
-                              ? 'text-[oklch(0.60_0.15_0)] hover:bg-[oklch(0.70_0.20_0_/_0.08)]'
+                            : path === '/legacy' || path === '/manifesto'
+                              ? 'text-[oklch(0.65_0.14_0)] hover:bg-[oklch(0.85_0.20_0_/_0.07)]'
                               : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)]',
                         )}
                       >
@@ -169,8 +193,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         <span className="font-display text-sm font-medium">{label}</span>
                       </a>
                     </Link>
-                  )
-                })}
+                  </div>
+                ))}
               </nav>
             </div>
           </div>
@@ -180,11 +204,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+/* ── Shared UI ────────────────────────────────────────────────────── */
+export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
-    <div className="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-[var(--color-border)]">
-      <h1 className="font-display font-bold text-lg md:text-xl text-[var(--color-text)] tracking-wide">{title}</h1>
-      {subtitle && <p className="text-[10px] text-[var(--color-muted)] mt-0.5 font-display tracking-wide">{subtitle}</p>}
+    <div className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-[var(--color-border)]">
+      <div>
+        <h1 className="font-display font-bold text-lg md:text-xl text-[var(--color-text)] tracking-wide">{title}</h1>
+        {subtitle && <p className="text-[10px] text-[var(--color-muted)] mt-0.5 font-display tracking-wide">{subtitle}</p>}
+      </div>
+      {action}
     </div>
   )
 }

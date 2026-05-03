@@ -1,117 +1,175 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Mulish', sans-serif;
-  --font-mono: 'Share Tech Mono', monospace;
+  --font-sans:    'Mulish', sans-serif;
+  --font-mono:    'Share Tech Mono', monospace;
   --font-display: 'Exo 2', sans-serif;
 
-  --color-bg:       oklch(0.08 0.025 240);
-  --color-surface:  oklch(0.11 0.030 240);
-  --color-elevated: oklch(0.14 0.032 240);
-  --color-border:   oklch(0.20 0.040 240);
-  --color-borderhi: oklch(0.28 0.055 240);
+  --color-bg:       oklch(0.07 0.022 240);
+  --color-surface:  oklch(0.10 0.028 240);
+  --color-elevated: oklch(0.13 0.030 240);
+  --color-border:   oklch(0.18 0.035 240);
+  --color-borderhi: oklch(0.26 0.050 240);
 
-  --color-cyan:    oklch(0.82 0.16 196);
-  --color-purple:  oklch(0.68 0.22 290);
-  --color-green:   oklch(0.74 0.17 145);
-  --color-amber:   oklch(0.80 0.17  72);
-  --color-red:     oklch(0.65 0.22  25);
-  --color-blue:    oklch(0.70 0.15 245);
+  --color-cyan:   oklch(0.84 0.17 196);
+  --color-purple: oklch(0.70 0.22 290);
+  --color-green:  oklch(0.76 0.17 145);
+  --color-amber:  oklch(0.82 0.17  72);
+  --color-red:    oklch(0.67 0.22  25);
+  --color-blue:   oklch(0.72 0.15 245);
+  --color-rose:   oklch(0.75 0.20   5);
 
-  --color-text:    oklch(0.92 0.015 240);
-  --color-muted:   oklch(0.58 0.040 240);
-  --color-dim:     oklch(0.35 0.040 240);
+  --color-text:   oklch(0.93 0.012 240);
+  --color-muted:  oklch(0.60 0.038 240);
+  --color-dim:    oklch(0.36 0.038 240);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+html, body, #root { height: 100%; margin: 0; padding: 0; }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-borderhi); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-cyan); }
 
-/* Aurora glow utilities */
-.glow-cyan   { box-shadow: 0 0 20px oklch(0.82 0.16 196 / 0.25); }
-.glow-purple { box-shadow: 0 0 20px oklch(0.68 0.22 290 / 0.25); }
-.text-glow-cyan { text-shadow: 0 0 12px oklch(0.82 0.16 196 / 0.7); }
+/* ── Aurora borealis background ────────────────────────────────────── */
+@keyframes aurora-drift-1 {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1);   opacity: 0.35; }
+  33%       { transform: translate(3%, -4%) rotate(3deg) scale(1.05); opacity: 0.50; }
+  66%       { transform: translate(-2%, 3%) rotate(-2deg) scale(0.97); opacity: 0.30; }
+}
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate(0%, 0%) rotate(0deg) scale(1);    opacity: 0.25; }
+  40%       { transform: translate(-4%, 2%) rotate(-4deg) scale(1.08); opacity: 0.45; }
+  70%       { transform: translate(3%, -3%) rotate(2deg) scale(0.95);  opacity: 0.20; }
+}
+@keyframes aurora-drift-3 {
+  0%, 100% { transform: translate(0%, 0%) scale(1);    opacity: 0.20; }
+  50%       { transform: translate(2%, -2%) scale(1.06); opacity: 0.38; }
+}
 
-/* Scanline grid overlay for technical feel */
+.aurora-orb-1 {
+  position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
+  width: 55vw; height: 55vw; top: -15%; left: -10%;
+  background: radial-gradient(ellipse, oklch(0.82 0.16 196 / 0.55) 0%, transparent 70%);
+  animation: aurora-drift-1 18s ease-in-out infinite;
+}
+.aurora-orb-2 {
+  position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none;
+  width: 50vw; height: 50vw; top: 20%; right: -15%;
+  background: radial-gradient(ellipse, oklch(0.68 0.22 290 / 0.45) 0%, transparent 70%);
+  animation: aurora-drift-2 22s ease-in-out infinite;
+}
+.aurora-orb-3 {
+  position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none;
+  width: 40vw; height: 40vw; bottom: -10%; left: 30%;
+  background: radial-gradient(ellipse, oklch(0.74 0.17 145 / 0.35) 0%, transparent 70%);
+  animation: aurora-drift-3 26s ease-in-out infinite;
+}
+
+/* ── Grid overlay ───────────────────────────────────────────────────── */
 .grid-overlay {
   background-image:
-    linear-gradient(oklch(0.82 0.16 196 / 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.82 0.16 196 / 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(oklch(0.82 0.16 196 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.82 0.16 196 / 0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-/* Ticker / data pulse animation */
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.75); }
-}
-.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
-
-@keyframes aurora-sweep {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.aurora-gradient {
-  background: linear-gradient(
-    135deg,
-    oklch(0.68 0.22 290 / 0.15),
-    oklch(0.82 0.16 196 / 0.15),
-    oklch(0.74 0.17 145 / 0.10)
-  );
-  background-size: 300% 300%;
-  animation: aurora-sweep 8s ease infinite;
-}
-
-/* Card base */
+/* ── Glass cards ────────────────────────────────────────────────────── */
 .card {
-  background-color: var(--color-surface);
+  background: oklch(0.10 0.028 240 / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.card:hover {
-  border-color: var(--color-borderhi);
-}
+.card:hover { border-color: var(--color-borderhi); }
 .card-glow:hover {
-  border-color: oklch(0.82 0.16 196 / 0.6);
+  border-color: oklch(0.82 0.16 196 / 0.5);
+  box-shadow: 0 0 28px oklch(0.82 0.16 196 / 0.10), 0 4px 20px rgba(0,0,0,0.4);
+}
+.card-active {
+  border-color: oklch(0.82 0.16 196 / 0.45);
   box-shadow: 0 0 24px oklch(0.82 0.16 196 / 0.12);
 }
 
-/* Status indicator */
-.status-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
+/* ── Glow utilities ─────────────────────────────────────────────────── */
+.glow-cyan   { box-shadow: 0 0 24px oklch(0.82 0.16 196 / 0.30); }
+.glow-purple { box-shadow: 0 0 24px oklch(0.68 0.22 290 / 0.30); }
+.glow-green  { box-shadow: 0 0 24px oklch(0.74 0.17 145 / 0.30); }
+.text-glow-cyan   { text-shadow: 0 0 14px oklch(0.82 0.16 196 / 0.80); }
+.text-glow-purple { text-shadow: 0 0 14px oklch(0.68 0.22 290 / 0.80); }
+
+/* ── Aurora gradient (card bg) ──────────────────────────────────────── */
+.aurora-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(0.68 0.22 290 / 0.12),
+    oklch(0.82 0.16 196 / 0.10),
+    oklch(0.74 0.17 145 / 0.08)
+  );
 }
 
-/* Monospace numbers */
+/* ── Pulse / blink ──────────────────────────────────────────────────── */
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.blink { animation: blink 1.1s step-end infinite; }
+
+/* ── Data ticker ────────────────────────────────────────────────────── */
+@keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-track { animation: ticker-scroll 40s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+
+/* ── Status dot ─────────────────────────────────────────────────────── */
+.status-dot { width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
+
+/* ── Mono numbers ───────────────────────────────────────────────────── */
 .mono { font-family: var(--font-mono); }
 
-/* iPhone safe areas */
+/* ── Scan line ──────────────────────────────────────────────────────── */
+@keyframes scanline { 0%{top:-8%} 100%{top:108%} }
+.scanline {
+  position:absolute; left:0; right:0; height:1px; pointer-events:none; z-index:1;
+  background: linear-gradient(90deg, transparent, oklch(0.82 0.16 196 / 0.2), transparent);
+  animation: scanline 8s linear infinite;
+}
+
+/* ── iPhone safe areas ──────────────────────────────────────────────── */
 .safe-top    { padding-top:    env(safe-area-inset-top); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-/* Mobile tap targets */
+/* Mobile tap polish */
 @media (max-width: 768px) {
-  .card { border-radius: 12px; }
+  .card { border-radius: 14px; }
   button, a { -webkit-tap-highlight-color: transparent; }
 }
+
+/* ── Gradient text ──────────────────────────────────────────────────── */
+.gradient-text-aurora {
+  background: linear-gradient(135deg, var(--color-cyan), var(--color-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-legacy {
+  background: linear-gradient(135deg, oklch(0.85 0.20 0), oklch(0.82 0.17 72));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Number counter animation ───────────────────────────────────────── */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-in { animation: count-up 0.35s ease-out forwards; }
