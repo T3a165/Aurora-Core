@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter'
 import {
   LayoutDashboard, Layers, Brain, Zap, Battery,
   FlaskConical, Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
-  Activity, Menu, X,
+  Activity, Menu, X, Heart,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -17,9 +17,10 @@ const NAV = [
   { path: '/turnbot',      icon: Radio,           label: 'TurnBot'     },
   { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'     },
   { path: '/alerts',       icon: Bell,            label: 'Alerts'      },
+  { path: '/legacy',       icon: Heart,           label: 'Legacy'      },
 ]
 
-const BOTTOM_PRIMARY = ['/', '/chat', '/agents', '/circuits', '/alerts']
+const BOTTOM_PRIMARY = ['/', '/chat', '/agents', '/circuits', '/legacy']
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
@@ -32,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden">
 
-      {/* ── Desktop sidebar ───────────────────────────────────────── */}
+      {/* Desktop sidebar */}
       <aside className={clsx(
         'hidden md:flex flex-col flex-shrink-0 transition-all duration-300',
         'bg-[var(--color-surface)] border-r border-[var(--color-border)]',
@@ -54,10 +55,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {NAV.map(({ path, icon: Icon, label }) => (
             <Link key={path} href={path}>
               <a className={clsx(
-                'flex items-center gap-3 px-2.5 py-2 rounded-md text-sm font-medium transition-all cursor-pointer',
+                'flex items-center gap-3 px-2.5 py-2 rounded-md font-medium transition-all cursor-pointer',
+                path === '/legacy' ? 'mt-2 border-t border-[var(--color-border)] pt-3' : '',
                 isActive(path)
                   ? 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
-                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]',
+                  : path === '/legacy'
+                    ? 'text-[oklch(0.70_0.20_0)] hover:text-[oklch(0.85_0.20_0)] hover:bg-[oklch(0.70_0.20_0_/_0.08)]'
+                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]',
               )}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
                 {!collapsed && <span className="truncate font-display text-xs tracking-wide">{label}</span>}
@@ -76,52 +80,49 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* ── Desktop main ──────────────────────────────────────────── */}
+      {/* Desktop main */}
       <main className="hidden md:block flex-1 overflow-y-auto bg-[var(--color-bg)] grid-overlay">
         {children}
       </main>
 
-      {/* ── Mobile shell ──────────────────────────────────────────── */}
+      {/* Mobile shell */}
       <div className="flex flex-col flex-1 min-w-0 md:hidden">
-
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0 safe-top">
+        <header className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface)] border-b border-[var(--color-border)] flex-shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded bg-[var(--color-elevated)] flex items-center justify-center glow-cyan">
               <Activity className="w-3.5 h-3.5 text-[var(--color-cyan)]" />
             </div>
             <span className="font-display font-bold text-sm text-[var(--color-cyan)] text-glow-cyan tracking-wider">AURORA CORE</span>
           </div>
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-md text-[var(--color-muted)] active:bg-[var(--color-elevated)] transition-colors"
-          >
+          <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-md text-[var(--color-muted)] active:bg-[var(--color-elevated)]">
             <Menu className="w-5 h-5" />
           </button>
         </header>
 
-        {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto bg-[var(--color-bg)] grid-overlay pb-20">
           {children}
         </main>
 
-        {/* Bottom navigation */}
-        <nav className="fixed bottom-0 inset-x-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-md border-t border-[var(--color-border)] safe-bottom md:hidden">
-          <div className="flex items-stretch h-14">
+        {/* Bottom nav */}
+        <nav className="fixed bottom-0 inset-x-0 z-40 bg-[var(--color-surface)]/95 backdrop-blur-md border-t border-[var(--color-border)] md:hidden">
+          <div className="flex items-stretch h-14" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             {BOTTOM_PRIMARY.map(path => {
               const item = NAV.find(n => n.path === path)!
               const Icon = item.icon
               const active = isActive(path)
+              const isLegacy = path === '/legacy'
               return (
                 <Link key={path} href={path}>
                   <a
                     onClick={() => setDrawerOpen(false)}
                     className={clsx(
-                      'flex-1 flex flex-col items-center justify-center gap-0.5 px-1 transition-colors active:scale-95',
-                      active ? 'text-[var(--color-cyan)]' : 'text-[var(--color-muted)]',
+                      'flex-1 flex flex-col items-center justify-center gap-0.5 px-1 transition-all active:scale-95',
+                      active
+                        ? isLegacy ? 'text-[oklch(0.85_0.20_0)]' : 'text-[var(--color-cyan)]'
+                        : isLegacy ? 'text-[oklch(0.60_0.15_0)]' : 'text-[var(--color-muted)]',
                     )}
                   >
-                    <Icon className={clsx('w-5 h-5 transition-all', active && 'drop-shadow-[0_0_6px_var(--color-cyan)]')} />
+                    <Icon className="w-5 h-5" />
                     <span className="text-[9px] font-display tracking-wide leading-none">{item.label}</span>
                   </a>
                 </Link>
@@ -129,7 +130,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             })}
             <button
               onClick={() => setDrawerOpen(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 px-1 text-[var(--color-muted)] active:scale-95 transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 px-1 text-[var(--color-muted)] active:scale-95"
             >
               <Menu className="w-5 h-5" />
               <span className="text-[9px] font-display tracking-wide leading-none">More</span>
@@ -137,37 +138,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </nav>
 
-        {/* Slide-in drawer (all nav items) */}
+        {/* Slide drawer */}
         {drawerOpen && (
           <div className="fixed inset-0 z-50">
-            <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setDrawerOpen(false)}
-            />
-            <div className="absolute right-0 top-0 bottom-0 w-72 bg-[var(--color-surface)] border-l border-[var(--color-border)] flex flex-col safe-top safe-bottom">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
+            <div className="absolute right-0 top-0 bottom-0 w-72 bg-[var(--color-surface)] border-l border-[var(--color-border)] flex flex-col">
               <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
-                <span className="font-display font-bold text-sm text-[var(--color-cyan)] tracking-wider">ALL SECTIONS</span>
-                <button onClick={() => setDrawerOpen(false)} className="p-1 text-[var(--color-muted)]">
-                  <X className="w-5 h-5" />
-                </button>
+                <span className="font-display font-bold text-sm text-[var(--color-cyan)] tracking-wider">AURORA CORE</span>
+                <button onClick={() => setDrawerOpen(false)} className="p-1 text-[var(--color-muted)]"><X className="w-5 h-5" /></button>
               </div>
               <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1">
-                {NAV.map(({ path, icon: Icon, label }) => (
-                  <Link key={path} href={path}>
-                    <a
-                      onClick={() => setDrawerOpen(false)}
-                      className={clsx(
-                        'flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all active:scale-98',
-                        isActive(path)
-                          ? 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
-                          : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)]',
-                      )}
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="font-display text-sm font-medium">{label}</span>
-                    </a>
-                  </Link>
-                ))}
+                {NAV.map(({ path, icon: Icon, label }) => {
+                  const isLegacy = path === '/legacy'
+                  return (
+                    <Link key={path} href={path}>
+                      <a
+                        onClick={() => setDrawerOpen(false)}
+                        className={clsx(
+                          'flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all active:scale-98',
+                          isActive(path)
+                            ? isLegacy
+                              ? 'bg-[oklch(0.70_0.20_0_/_0.15)] text-[oklch(0.85_0.20_0)] border border-[oklch(0.70_0.20_0_/_0.4)]'
+                              : 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
+                            : isLegacy
+                              ? 'text-[oklch(0.60_0.15_0)] hover:bg-[oklch(0.70_0.20_0_/_0.08)]'
+                              : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)]',
+                        )}
+                      >
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-display text-sm font-medium">{label}</span>
+                      </a>
+                    </Link>
+                  )
+                })}
               </nav>
             </div>
           </div>
@@ -177,7 +180,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── Shared UI components ──────────────────────────────────────────────────
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-[var(--color-border)]">
@@ -187,9 +189,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
   )
 }
 
-export function MetricCard({
-  label, value, unit, delta, color = 'var(--color-cyan)',
-}: {
+export function MetricCard({ label, value, unit, delta, color = 'var(--color-cyan)' }: {
   label: string; value: string | number; unit?: string; delta?: string; color?: string
 }) {
   return (
@@ -206,15 +206,10 @@ export function MetricCard({
 
 export function StatusDot({ status }: { status: 'active' | 'idle' | 'conflict' | 'off' | 'error' }) {
   const colors: Record<string, string> = {
-    active:   'var(--color-green)',
-    idle:     'var(--color-muted)',
-    conflict: 'var(--color-amber)',
-    off:      'var(--color-dim)',
-    error:    'var(--color-red)',
+    active: 'var(--color-green)', idle: 'var(--color-muted)',
+    conflict: 'var(--color-amber)', off: 'var(--color-dim)', error: 'var(--color-red)',
   }
-  return (
-    <span className="status-dot pulse-dot flex-shrink-0" style={{ backgroundColor: colors[status] ?? colors.idle }} />
-  )
+  return <span className="status-dot pulse-dot flex-shrink-0" style={{ backgroundColor: colors[status] ?? colors.idle }} />
 }
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {

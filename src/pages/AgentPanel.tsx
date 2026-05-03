@@ -1,3 +1,4 @@
+import { PageTransition } from '../components/PageTransition'
 import { PageHeader, StatusDot, SectionLabel } from '../components/Layout'
 import { agents } from '../lib/seed'
 

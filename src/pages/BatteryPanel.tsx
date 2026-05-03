@@ -1,3 +1,4 @@
+import { PageTransition } from '../components/PageTransition'
 import { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { PageHeader, SectionLabel } from '../components/Layout'
