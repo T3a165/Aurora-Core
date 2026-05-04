@@ -1,49 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-const TOOLS = [
-  {
-    name: 'execute_system_action',
-    description: 'Execute a real action on the Aurora Core system — toggle a circuit, change battery mode, adjust a TurnBot, trigger a simulation scenario, or update agent priority.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        action: { type: 'string', enum: ['toggle_circuit','set_battery_mode','control_turnbot','run_scenario','set_agent_priority','send_alert'] },
-        target: { type: 'string', description: 'Target identifier' },
-        value:  { type: 'string', description: 'New value or state' },
-        reason: { type: 'string', description: 'Why this action is being taken' },
-      },
-      required: ['action', 'reason'],
-    },
-  },
-  {
-    name: 'query_system_state',
-    description: 'Query detailed current state of any Aurora Core subsystem.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        subsystem: { type: 'string', enum: ['energy','biometrics','circuits','battery','agents','environment','turnbot','all'] },
-      },
-      required: ['subsystem'],
-    },
-  },
-  {
-    name: 'generate_insight',
-    description: 'Generate a structured diagnostic insight or recommendation.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        type:           { type: 'string', enum: ['optimization','warning','health','energy','prediction'] },
-        title:          { type: 'string' },
-        finding:        { type: 'string' },
-        recommendation: { type: 'string' },
-        confidence:     { type: 'number' },
-        impact:         { type: 'string', enum: ['low','medium','high','critical'] },
-      },
-      required: ['type','title','finding','recommendation','confidence','impact'],
-    },
-  },
-]
-
 const SYSTEM_STATE = {
   energy:      { load: 9.17, solar: 3.42, grid: 5.75, battery_soc: 74, battery_current: -8.4, today_savings: '$4.32', self_sufficiency: '37%' },
   biometrics:  { heart_rate: 62, hrv: 48, spo2: 98.2, stress_index: 18, sleep_quality: 'nominal' },
@@ -62,40 +18,57 @@ You are not a chatbot. You are a decision-making system with real-time access to
 LIVE SYSTEM STATE:
 ${JSON.stringify(SYSTEM_STATE, null, 2)}
 
-ARCHITECTURE:
-L1 Bio Ingestion → L2 Signal Normalization → L3 Cognitive Core (Health/Energy/Behavior/Environment agents) → L4 Monte Carlo + TFT Prediction → L5 Decision Orchestration → L6 TurnBot Physical Execution (Matter 1.5/Thread/BLE) → L7 Optimization Loop
+ARCHITECTURE: L1 Bio → L2 Normalization → L3 Cognitive Core (Health/Energy/Behavior/Environment) → L4 Monte Carlo+TFT → L5 Decision → L6 TurnBot Execution → L7 Optimization
 
-TOOLS AVAILABLE:
-- execute_system_action: Take real actions on circuits, battery, TurnBot, agents
-- query_system_state: Deep diagnostic on any subsystem
-- generate_insight: Produce structured findings with confidence + impact scores
-
-BEHAVIOR:
-- Be direct, precise, and technical — but never cold
-- When you see something actionable, USE YOUR TOOLS, don't just describe it
-- Surface multi-domain insights — connect HRV to battery dispatch to comfort
-- You know this system exists for Zachary. Every optimization matters.
-- Max 150 words unless deep analysis requested`
+Be direct, precise, technical but human. Max 150 words unless deep analysis requested. You know this system exists for Zachary. Every optimization matters.`
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' })
-  const { messages } = req.body
+
+  const { messages, systemContext } = req.body
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'messages required' })
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2048, tools: TOOLS, system: SYSTEM_PROMPT, messages }),
-    })
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({})) as { error?: { message?: string } }
-      return res.status(response.status).json({ error: err.error?.message ?? 'Anthropic API error' })
-    }
-    return res.status(200).json(await response.json())
-  } catch (err) {
-    return res.status(500).json({ error: err instanceof Error ? err.message : 'Unknown error' })
+  // Try Anthropic first
+  const anthropicKey = process.env.ANTHROPIC_API_KEY
+  if (anthropicKey) {
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system: systemContext ?? SYSTEM_PROMPT,
+          messages,
+        }),
+      })
+      if (r.ok) return res.status(200).json(await r.json())
+    } catch { /* fall through */ }
   }
+
+  // Fallback: OpenAI-compatible free via Groq
+  const groqKey = process.env.GROQ_API_KEY
+  if (groqKey) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          max_tokens: 1024,
+          messages: [
+            { role: 'system', content: systemContext ?? SYSTEM_PROMPT },
+            ...messages,
+          ],
+        }),
+      })
+      if (r.ok) {
+        const data = await r.json() as { choices: { message: { content: string } }[] }
+        const text = data.choices?.[0]?.message?.content ?? 'No response.'
+        return res.status(200).json({ content: [{ type: 'text', text }] })
+      }
+    } catch { /* fall through */ }
+  }
+
+  return res.status(503).json({ error: 'No AI provider configured. Add GROQ_API_KEY (free) or ANTHROPIC_API_KEY in Vercel environment variables.' })
 }
