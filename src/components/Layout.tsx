@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter'
 import {
   LayoutDashboard, Layers, Brain, Zap, Battery, FlaskConical,
   Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
-  Activity, Menu, X, Heart, BookOpen,
+  Activity, Menu, X, Heart, BookOpen, ExternalLink,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { AuroraBackground } from './AuroraBackground'
@@ -20,11 +20,12 @@ const NAV = [
   { path: '/turnbot',      icon: Radio,           label: 'TurnBot'     },
   { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'     },
   { path: '/alerts',       icon: Bell,            label: 'Alerts'      },
-  { path: '/manifesto',    icon: BookOpen,        label: 'Manifesto',  divider: true },
+  { path: '/integrations',  icon: ExternalLink,    label: 'Integrations', divider: true },
+  { path: '/manifesto',    icon: BookOpen,        label: 'Manifesto'   },
   { path: '/legacy',       icon: Heart,           label: 'Legacy'      },
 ]
 
-const BOTTOM_PRIMARY = ['/', '/chat', '/agents', '/legacy', '/manifesto']
+const BOTTOM_PRIMARY = ['/', '/chat', '/integrations', '/legacy', '/manifesto']
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()

@@ -15,6 +15,7 @@ import { AIChat }          from './pages/AIChat'
 import { Alerts }          from './pages/Alerts'
 import { Legacy }          from './pages/Legacy'
 import { Manifesto }       from './pages/Manifesto'
+import { Integrations }    from './pages/Integrations'
 
 export default function App() {
   const [booted, setBooted] = useState(false)
@@ -37,8 +38,9 @@ export default function App() {
             <Route path="/turnbot"    component={TurnBotPanel}    />
             <Route path="/chat"       component={AIChat}          />
             <Route path="/alerts"     component={Alerts}          />
-            <Route path="/manifesto"  component={Manifesto}       />
-            <Route path="/legacy"     component={Legacy}          />
+            <Route path="/manifesto"   component={Manifesto}      />
+            <Route path="/integrations" component={Integrations}   />
+            <Route path="/legacy"      component={Legacy}          />
             <Route>
               <div className="flex items-center justify-center h-full text-[var(--color-muted)] font-display">
                 404 · Page not found
