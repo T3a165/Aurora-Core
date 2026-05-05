@@ -3,80 +3,108 @@ import { Link, useLocation } from 'wouter'
 import {
   LayoutDashboard, Layers, Brain, Zap, Battery, FlaskConical,
   Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
-  Activity, Menu, X, Heart, BookOpen, ExternalLink,
+  Activity, Menu, X, Heart, BookOpen, ExternalLink, Settings, Crown,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { AuroraBackground } from './AuroraBackground'
 import { DataTicker } from './DataTicker'
 import { useRealtime } from '../lib/useRealtime'
+import { useAuth } from '../lib/auth'
 
 const NAV = [
-  { path: '/',             icon: LayoutDashboard, label: 'Dashboard'   },
-  { path: '/layers',       icon: Layers,          label: 'Layers'      },
-  { path: '/agents',       icon: Brain,           label: 'Agents'      },
-  { path: '/circuits',     icon: Zap,             label: 'Circuits'    },
-  { path: '/battery',      icon: Battery,         label: 'Battery'     },
-  { path: '/simulation',   icon: FlaskConical,    label: 'Simulation'  },
-  { path: '/turnbot',      icon: Radio,           label: 'TurnBot'     },
-  { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'     },
-  { path: '/alerts',       icon: Bell,            label: 'Alerts'      },
-  { path: '/integrations',  icon: ExternalLink,    label: 'Integrations', divider: true },
-  { path: '/manifesto',    icon: BookOpen,        label: 'Manifesto'   },
-  { path: '/legacy',       icon: Heart,           label: 'Legacy'      },
+  { path: '/',             icon: LayoutDashboard, label: 'Dashboard'    },
+  { path: '/layers',       icon: Layers,          label: 'Layers'       },
+  { path: '/agents',       icon: Brain,           label: 'Agents'       },
+  { path: '/circuits',     icon: Zap,             label: 'Circuits'     },
+  { path: '/battery',      icon: Battery,         label: 'Battery'      },
+  { path: '/simulation',   icon: FlaskConical,    label: 'Simulation'   },
+  { path: '/turnbot',      icon: Radio,           label: 'TurnBot'      },
+  { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'      },
+  { path: '/alerts',       icon: Bell,            label: 'Alerts'       },
+  { path: '/integrations', icon: ExternalLink,    label: 'Integrations', divider: true },
+  { path: '/manifesto',    icon: BookOpen,        label: 'Manifesto'    },
+  { path: '/legacy',       icon: Heart,           label: 'Legacy'       },
+  { path: '/settings',     icon: Settings,        label: 'Settings'     },
 ]
 
-const BOTTOM_PRIMARY = ['/', '/chat', '/integrations', '/legacy', '/manifesto']
+const BOTTOM_PRIMARY = ['/', '/chat', '/integrations', '/legacy', '/settings']
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation()
   const [collapsed, setCollapsed] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const metrics = useRealtime()
+  const { user, isGod } = useAuth()
 
   const isActive = (path: string) =>
     location === path || (path !== '/' && location.startsWith(path))
 
-  const navItemClass = (path: string) => clsx(
-    'flex items-center gap-3 px-2.5 py-2 rounded-lg font-medium transition-all duration-150 cursor-pointer',
-    isActive(path)
-      ? path === '/legacy' || path === '/manifesto'
+  const isSpecial = (path: string) =>
+    ['/legacy', '/manifesto', '/settings', '/integrations'].includes(path)
+
+  const navClass = (path: string, active: boolean) => clsx(
+    'flex items-center gap-3 px-2.5 py-2 rounded-lg font-medium transition-all cursor-pointer',
+    active
+      ? isGod && path === '/settings'
         ? 'bg-[oklch(0.85_0.20_0_/_0.12)] text-[oklch(0.90_0.18_0)] border border-[oklch(0.85_0.20_0_/_0.35)]'
         : 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.35)]'
-      : path === '/legacy' || path === '/manifesto'
-        ? 'text-[oklch(0.65_0.14_0)] hover:text-[oklch(0.85_0.20_0)] hover:bg-[oklch(0.85_0.20_0_/_0.07)]'
+      : isSpecial(path)
+        ? 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]'
         : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)]',
+  )
+
+  const UserBadge = () => (
+    <Link href="/settings">
+      <a className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--color-elevated)] transition-colors cursor-pointer">
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-display font-black border ${
+          isGod ? 'border-[oklch(0.85_0.20_0_/_0.5)] bg-[oklch(0.85_0.20_0_/_0.12)] text-[oklch(0.90_0.18_0)]'
+                : 'border-[var(--color-borderhi)] bg-[var(--color-elevated)] text-[var(--color-cyan)]'
+        }`}>
+          {isGod ? '⚡' : user?.name?.[0]?.toUpperCase()}
+        </div>
+        {!collapsed && (
+          <div className="min-w-0">
+            <div className="text-[10px] font-display font-bold truncate" style={{ color: isGod ? 'oklch(0.90 0.18 0)' : 'var(--color-text)' }}>
+              {isGod ? 'God Mode' : user?.name}
+            </div>
+            <div className="text-[8px] text-[var(--color-dim)] truncate">{user?.role}</div>
+          </div>
+        )}
+        {isGod && !collapsed && <Crown className="w-3 h-3 flex-shrink-0" style={{ color: 'oklch(0.85 0.20 0)' }} />}
+      </a>
+    </Link>
   )
 
   return (
     <div className="flex h-screen overflow-hidden relative">
       <AuroraBackground />
 
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
+      {/* Desktop sidebar */}
       <aside className={clsx(
         'hidden md:flex flex-col flex-shrink-0 transition-all duration-300 relative z-10',
         'bg-[var(--color-surface)]/80 backdrop-blur-xl border-r border-[var(--color-border)]',
         collapsed ? 'w-[52px]' : 'w-52',
       )}>
-        {/* Wordmark */}
+        {/* Logo */}
         <div className="flex items-center gap-3 px-3 py-4 border-b border-[var(--color-border)]">
           <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[oklch(0.82_0.16_196_/_0.10)] border border-[oklch(0.82_0.16_196_/_0.35)] flex items-center justify-center glow-cyan">
             <Activity className="w-4 h-4 text-[var(--color-cyan)]" />
           </div>
           {!collapsed && (
-            <div className="min-w-0">
+            <div>
               <div className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan leading-tight tracking-wider">AURORA</div>
-              <div className="font-display text-[9px] text-[var(--color-dim)] tracking-[0.2em] uppercase leading-tight">CORE · McLain Systems</div>
+              <div className="font-display text-[9px] text-[var(--color-dim)] tracking-[0.2em] uppercase">CORE · v2.0</div>
             </div>
           )}
         </div>
 
-        {/* Nav items */}
+        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-1.5">
           {NAV.map(({ path, icon: Icon, label, divider }) => (
             <div key={path}>
               {divider && <div className="h-px bg-[var(--color-border)] my-2 mx-2" />}
               <Link href={path}>
-                <a className={navItemClass(path)}>
+                <a className={navClass(path, isActive(path))}>
                   <Icon className="w-4 h-4 flex-shrink-0" />
                   {!collapsed && <span className="truncate font-display text-xs tracking-wide">{label}</span>}
                 </a>
@@ -85,49 +113,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Collapse toggle */}
-        <div className="p-2 border-t border-[var(--color-border)]">
-          <button
-            onClick={() => setCollapsed(c => !c)}
-            className="w-full flex items-center justify-center p-2 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)] transition-colors"
-          >
+        {/* User + collapse */}
+        <div className="border-t border-[var(--color-border)] p-2 space-y-1">
+          <UserBadge />
+          <button onClick={() => setCollapsed(c => !c)}
+            className="w-full flex items-center justify-center p-2 rounded-lg text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-elevated)] transition-colors">
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
       </aside>
 
-      {/* ── Desktop main ─────────────────────────────────────────── */}
+      {/* Desktop main */}
       <div className="hidden md:flex flex-col flex-1 min-w-0 relative z-10">
         <DataTicker metrics={metrics} />
-        <main className="flex-1 overflow-y-auto grid-overlay">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto grid-overlay">{children}</main>
       </div>
 
-      {/* ── Mobile shell ─────────────────────────────────────────── */}
+      {/* Mobile shell */}
       <div className="flex flex-col flex-1 min-w-0 md:hidden relative z-10">
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)] flex-shrink-0">
+        <header className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-surface)]/80 backdrop-blur-xl border-b border-[var(--color-border)]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-[oklch(0.82_0.16_196_/_0.10)] border border-[oklch(0.82_0.16_196_/_0.35)] flex items-center justify-center">
               <Activity className="w-3.5 h-3.5 text-[var(--color-cyan)]" />
             </div>
-            <div>
-              <span className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan tracking-wider">AURORA CORE</span>
-            </div>
+            <span className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan tracking-wider">AURORA CORE</span>
+            {isGod && <Crown className="w-3.5 h-3.5" style={{ color: 'oklch(0.85 0.20 0)' }} />}
           </div>
-          <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-lg text-[var(--color-muted)] active:bg-[var(--color-elevated)]">
+          <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-lg text-[var(--color-muted)]">
             <Menu className="w-5 h-5" />
           </button>
         </header>
 
-        {/* Live ticker */}
         <DataTicker metrics={metrics} />
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto grid-overlay pb-20">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto grid-overlay pb-20">{children}</main>
 
         {/* Bottom nav */}
         <nav className="fixed bottom-0 inset-x-0 z-40 bg-[var(--color-surface)]/90 backdrop-blur-xl border-t border-[var(--color-border)] md:hidden">
@@ -136,17 +155,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               const item = NAV.find(n => n.path === path)!
               const Icon = item.icon
               const active = isActive(path)
-              const isSpecial = path === '/legacy' || path === '/manifesto'
+              const godSettings = path === '/settings' && isGod
               return (
                 <Link key={path} href={path}>
                   <a onClick={() => setDrawerOpen(false)}
-                    className={clsx(
-                      'flex-1 flex flex-col items-center justify-center gap-0.5 px-1 transition-all active:scale-95',
+                    className={clsx('flex-1 flex flex-col items-center justify-center gap-0.5 px-1 transition-all active:scale-95',
                       active
-                        ? isSpecial ? 'text-[oklch(0.90_0.18_0)]' : 'text-[var(--color-cyan)]'
-                        : isSpecial ? 'text-[oklch(0.55_0.12_0)]' : 'text-[var(--color-muted)]',
-                    )}
-                  >
+                        ? godSettings ? 'text-[oklch(0.90_0.18_0)]' : 'text-[var(--color-cyan)]'
+                        : godSettings ? 'text-[oklch(0.70_0.15_0)]' : 'text-[var(--color-muted)]',
+                    )}>
                     <Icon className="w-5 h-5" />
                     <span className="text-[8px] font-display tracking-wide">{item.label}</span>
                   </a>
@@ -161,35 +178,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </nav>
 
-        {/* Slide drawer */}
+        {/* Drawer */}
         {drawerOpen && (
           <div className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} />
             <div className="absolute right-0 top-0 bottom-0 w-72 bg-[var(--color-surface)]/95 backdrop-blur-xl border-l border-[var(--color-border)] flex flex-col">
               <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--color-border)]">
-                <div>
+                <div className="flex items-center gap-2">
                   <div className="font-display font-black text-sm text-[var(--color-cyan)] text-glow-cyan tracking-widest">AURORA CORE</div>
-                  <div className="mono text-[8px] text-[var(--color-dim)]">McLain Systems · v2.0</div>
+                  {isGod && <Crown className="w-3.5 h-3.5" style={{ color: 'oklch(0.85 0.20 0)' }} />}
                 </div>
-                <button onClick={() => setDrawerOpen(false)} className="p-1 text-[var(--color-muted)]"><X className="w-5 h-5" /></button>
+                <button onClick={() => setDrawerOpen(false)} className="text-[var(--color-muted)]"><X className="w-5 h-5" /></button>
               </div>
+
+              {/* User card in drawer */}
+              <div className="px-3 py-2 border-b border-[var(--color-border)]">
+                <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${isGod ? 'bg-[oklch(0.85_0.20_0_/_0.08)] border border-[oklch(0.85_0.20_0_/_0.3)]' : 'bg-[var(--color-elevated)]'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-display font-black text-sm border ${
+                    isGod ? 'border-[oklch(0.85_0.20_0_/_0.5)] text-[oklch(0.90_0.18_0)]' : 'border-[var(--color-borderhi)] text-[var(--color-cyan)]'}`}>
+                    {isGod ? '⚡' : user?.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-xs font-display font-bold" style={{ color: isGod ? 'oklch(0.90 0.18 0)' : 'var(--color-text)' }}>
+                      {user?.name} {isGod && '· God Mode'}
+                    </div>
+                    <div className="text-[9px] text-[var(--color-muted)]">{user?.email}</div>
+                  </div>
+                </div>
+              </div>
+
               <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
                 {NAV.map(({ path, icon: Icon, label, divider }) => (
                   <div key={path}>
                     {divider && <div className="h-px bg-[var(--color-border)] my-2 mx-1" />}
                     <Link href={path}>
                       <a onClick={() => setDrawerOpen(false)}
-                        className={clsx(
-                          'flex items-center gap-3 px-3 py-3 rounded-lg transition-all active:scale-[0.98]',
+                        className={clsx('flex items-center gap-3 px-3 py-3 rounded-lg transition-all',
                           isActive(path)
-                            ? path === '/legacy' || path === '/manifesto'
-                              ? 'bg-[oklch(0.85_0.20_0_/_0.12)] text-[oklch(0.90_0.18_0)] border border-[oklch(0.85_0.20_0_/_0.35)]'
-                              : 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
-                            : path === '/legacy' || path === '/manifesto'
-                              ? 'text-[oklch(0.65_0.14_0)] hover:bg-[oklch(0.85_0.20_0_/_0.07)]'
-                              : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)]',
-                        )}
-                      >
+                            ? 'bg-[oklch(0.82_0.16_196_/_0.12)] text-[var(--color-cyan)] border border-[oklch(0.82_0.16_196_/_0.3)]'
+                            : 'text-[var(--color-muted)] hover:bg-[var(--color-elevated)]',
+                        )}>
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-display text-sm font-medium">{label}</span>
                       </a>
@@ -205,7 +233,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   )
 }
 
-/* ── Shared UI ────────────────────────────────────────────────────── */
+/* ── Shared UI ─────────────────────────────────────────────────────── */
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-[var(--color-border)]">
