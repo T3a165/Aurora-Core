@@ -8,7 +8,7 @@ import {
 import clsx from 'clsx'
 import { AuroraBackground } from './AuroraBackground'
 import { DataTicker } from './DataTicker'
-import { useRealtime } from '../lib/useRealtime'
+import { useRealtime } from '../hooks/useRealtime'
 import { useAuth } from '../lib/auth'
 
 const NAV = [
