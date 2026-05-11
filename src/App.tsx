@@ -21,6 +21,7 @@ import { Legacy }          from './pages/Legacy'
 import { Settings }        from './pages/Settings'
 import { ArchangelPanel }  from './pages/ArchangelPanel'
 import { PillarsPanel }    from './pages/PillarsPanel'
+import SovereignEngine     from './components/SovereignEngine'
 
 function AppInner() {
   const { user } = useAuth()
@@ -44,6 +45,7 @@ function AppInner() {
         <Route path="/integrations" component={Integrations}    />
         <Route path="/archangel"   component={ArchangelPanel}  />
         <Route path="/pillars"     component={PillarsPanel}    />
+        <Route path="/sovereign"   component={SovereignEngine} />
         <Route path="/manifesto"    component={Manifesto}       />
         <Route path="/legacy"       component={Legacy}          />
         <Route path="/settings"     component={Settings}        />
