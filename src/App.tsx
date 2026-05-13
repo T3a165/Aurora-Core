@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Route, Switch } from 'wouter'
 import { AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider, useAuth } from './lib/auth'
 import { ToastProvider } from './lib/toast'
 import { Layout } from './components/Layout'
@@ -66,6 +67,7 @@ export default function App() {
         <AnimatePresence>
           <AppInner />
         </AnimatePresence>
+        <Analytics />
       </ToastProvider>
     </AuthProvider>
   )
