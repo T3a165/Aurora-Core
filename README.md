@@ -174,3 +174,11 @@ The line continues. The name carries forward. Always.
 ---
 
 Built with purpose · McLain Systems · Jamaica Beach, Texas · 2026
+## License
+Aurora Core OS is licensed under the Aurora Core OS – Non‑Commercial Open License (ACOS‑NCOL 1.0).
+
+This means:
+- Free for personal, educational, and research use
+- No commercial use without written permission
+
+See the full LICENSE file for details.
