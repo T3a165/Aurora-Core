@@ -1,4 +1,7 @@
 # Aurora Core v2.0
+![License: ACOS‑NCOL](https://img.shields.io/badge/License-ACOS--NCOL-blue.svg)
+![Non‑Commercial](https://img.shields.io/badge/Use-Non--Commercial-red.svg)
+![Made by Garrett](https://img.shields.io/badge/Made_by-Garrett_McLain-black.svg)
 
 > **Seven-layer cognitive-energy ecosystem** — built entirely on an iPhone 16 Pro Max, by Garrett McLain, for his son Zachary Lee McLain (born April 13, 2026).
 
