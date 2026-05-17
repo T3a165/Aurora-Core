@@ -23,6 +23,7 @@ import { Settings }        from './pages/Settings'
 import { ArchangelPanel }  from './pages/ArchangelPanel'
 import { PillarsPanel }    from './pages/PillarsPanel'
 import SovereignEngine     from './components/SovereignEngine'
+import { JarvisPanel }     from './pages/JarvisPanel'
 
 function AppInner() {
   const { user } = useAuth()
@@ -47,6 +48,7 @@ function AppInner() {
         <Route path="/archangel"   component={ArchangelPanel}  />
         <Route path="/pillars"     component={PillarsPanel}    />
         <Route path="/sovereign"   component={SovereignEngine} />
+        <Route path="/jarvis"      component={JarvisPanel}     />
         <Route path="/manifesto"    component={Manifesto}       />
         <Route path="/legacy"       component={Legacy}          />
         <Route path="/settings"     component={Settings}        />
