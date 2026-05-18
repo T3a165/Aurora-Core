@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 
-export type UserRole = 'god' | 'admin' | 'viewer'
+export type UserRole = 'god' | 'admin' | 'viewer' | 'guest'
 
 export type User = {
   id: string
@@ -16,6 +16,7 @@ type AuthCtx = {
   users: User[]
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string) => Promise<void>
+  loginAsGuest: () => void
   logout: () => void
   isGod: boolean
   isAdmin: boolean
@@ -119,6 +120,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanUser))
   }
 
+  const loginAsGuest = () => {
+    const guest: User = {
+      id: 'guest-' + Date.now(),
+      email: 'guest@aurora.core',
+      name: 'Guest',
+      role: 'guest',
+      avatar: '👁',
+      joinedAt: new Date().toISOString().split('T')[0],
+    }
+    setUser(guest)
+    // Don't persist guest to localStorage — session only
+  }
+
   const logout = () => {
     setUser(null)
     localStorage.removeItem(STORAGE_KEY)
@@ -133,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      user, users, login, signup, logout,
+      user, users, login, signup, loginAsGuest, logout,
       isGod:  user?.role === 'god',
       isAdmin: user?.role === 'god' || user?.role === 'admin',
       updateUserRole, error,

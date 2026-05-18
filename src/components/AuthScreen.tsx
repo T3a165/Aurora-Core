@@ -4,7 +4,7 @@ import { Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
 export function AuthScreen() {
-  const { login, signup } = useAuth()
+  const { login, signup, loginAsGuest } = useAuth()
   const [mode, setMode]     = useState<'login' | 'signup'>('login')
   const [email, setEmail]   = useState('')
   const [pw, setPw]         = useState('')
@@ -128,6 +128,20 @@ export function AuthScreen() {
               {loading
                 ? <Loader2 className="w-4 h-4 animate-spin" />
                 : <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight className="w-4 h-4" /></>}
+            </motion.button>
+
+            <div className="relative flex items-center gap-3 my-1">
+              <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+              <span className="text-[9px] font-display tracking-widest" style={{ color: 'var(--color-dim)' }}>OR</span>
+              <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+            </div>
+
+            <motion.button onClick={loginAsGuest} whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-display tracking-wider transition-all"
+              style={{ border: '1px solid var(--color-border)', color: 'var(--color-muted)', background: 'transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(6,182,212,0.3)'; e.currentTarget.style.color = 'var(--color-cyan)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-muted)' }}>
+              👁 &nbsp;Continue as Guest
             </motion.button>
           </div>
 
