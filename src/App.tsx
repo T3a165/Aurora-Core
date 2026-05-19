@@ -59,7 +59,7 @@ function AppInner() {
           </div>
         </Route>
       </Switch>
-        <JarvisOrb />
+        <JarvisOrb /> 
     </Layout>
   )
 }
