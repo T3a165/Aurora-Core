@@ -24,6 +24,7 @@ import { ArchangelPanel }  from './pages/ArchangelPanel'
 import { PillarsPanel }    from './pages/PillarsPanel'
 import SovereignEngine     from './components/SovereignEngine'
 import { JarvisPanel }     from './pages/JarvisPanel'
+import JarvisOrb from './components/JarvisOrb'
 
 function AppInner() {
   const { user } = useAuth()
