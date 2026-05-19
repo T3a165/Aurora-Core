@@ -25,7 +25,7 @@ export default function Jarvis() {
         const arrayBuffer = await audioBlob.arrayBuffer();
 
         // Send raw audio to backend
-        const res = await fetch("/api/jarvis", {
+        const res = await fetch("/api/Jarvis", {
           method: "POST",
           headers: {
             "Content-Type": "audio/webm",
