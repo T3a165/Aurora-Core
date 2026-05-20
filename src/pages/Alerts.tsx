@@ -1,3 +1,4 @@
+import { PageTransition } from '../components/PageTransition'
 import { useState } from 'react'
 import { CheckCircle2, Bell } from 'lucide-react'
 import clsx from 'clsx'

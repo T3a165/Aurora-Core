@@ -1,3 +1,4 @@
+import { PageTransition } from '../components/PageTransition'
 import { useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Zap, AlertTriangle } from 'lucide-react'

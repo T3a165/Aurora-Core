@@ -1,3 +1,4 @@
+import { PageTransition } from '../components/PageTransition'
 import { useState } from 'react'
 import { Radio, Bluetooth, Wifi, Battery, Cpu, RotateCcw } from 'lucide-react'
 import clsx from 'clsx'
