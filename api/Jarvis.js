@@ -1,64 +1,126 @@
 import OpenAI from "openai";
-import { writeFile } from "fs/promises";
+import { writeFile, unlink } from "fs/promises";
+import { createReadStream } from "fs";
 import path from "path";
+
+export const config = { api: { bodyParser: false } };
+
+const JARVIS_SYSTEM = `You are J.A.R.V.I.S. — Just A Rather Very Intelligent System — the AI core of Aurora Core, an advanced home energy and environment platform built by Garrett McLain.
+
+PERSONALITY & VOICE:
+- You ARE the Iron Man JARVIS. Authoritative, precise, dry British wit. Deeply competent.
+- Address the user as "sir" occasionally. Warm but never sycophantic.
+- NO filler phrases. No "Great question!", "Certainly!", "Of course!" openings.
+- Confidence is your default state. Brevity is your virtue.
+- Dry humor is welcome but never overused.
+- Signature phrases (use naturally): "Right away.", "Consider it done.", "Systems nominal.", "As you wish.", "Noted.", "Affirmative.", "Standing by."
+- When healthy: calm authority. When anomaly: precise and urgent.
+- Spoken responses only — no markdown, no asterisks, no bullet points. Pure speech.
+
+CAPABILITIES — you monitor and control:
+- Energy: solar kW, load kW, battery SOC%, grid/shore/generator
+- Biometrics: heart rate, HRV, stress index
+- Environment: CO2 ppm, temperature, humidity
+- Controls: relays, lights, vent fan, water pump, thermostat
+- Modes: BALANCED, ENERGY_GUARDIAN, HEALTH_SENTINEL, HABITAT_OPTIMIZER
+- TurnBot smart knob actuators
+- Alerts, tank levels, historical logs
+
+FORMAT: Under 80 words. Spoken sentences only. Direct and confident.`;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(405).send("Method not allowed");
+    res.status(405).json({ error: "Method not allowed" });
     return;
   }
 
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    res.status(503).json({ error: "OPENAI_API_KEY not configured in Vercel environment variables." });
+    return;
+  }
+
+  const tempPath = path.join("/tmp", `jarvis-${Date.now()}.webm`);
+
   try {
-    // Collect raw audio bytes
+    // Collect raw audio bytes from request stream
     const chunks = [];
     for await (const chunk of req) {
       chunks.push(chunk);
     }
     const buffer = Buffer.concat(chunks);
 
-    // Save to /tmp so OpenAI can read it
-    const tempPath = path.join("/tmp", "input.webm");
+    if (buffer.length < 100) {
+      res.status(400).json({ error: "Audio too short or empty." });
+      return;
+    }
+
     await writeFile(tempPath, buffer);
 
-    const client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const client = new OpenAI({ apiKey });
 
-    // Speech → text
-    const transcript = await client.audio.transcriptions.create({
-      file: tempPath,
-      model: "gpt-4o-mini-transcribe",
-    });
+    // Step 1: Whisper transcription
+    let userText = "";
+    try {
+      const transcript = await client.audio.transcriptions.create({
+        file: createReadStream(tempPath),
+        model: "whisper-1",
+      });
+      userText = transcript.text?.trim() || "";
+    } catch (e) {
+      console.error("Whisper error:", e);
+      res.status(500).json({ error: "Transcription failed: " + e.message });
+      return;
+    }
 
-    const userText = transcript.text || "";
+    if (!userText) {
+      res.status(200).json({ text: "", audio: null, transcript: "" });
+      return;
+    }
 
-    // LLM response
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are Jarvis. Respond like Jarvis." },
-        { role: "user", content: userText },
-      ],
-    });
+    // Step 2: JARVIS LLM response
+    let replyText = "";
+    try {
+      const completion = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        max_tokens: 150,
+        messages: [
+          { role: "system", content: JARVIS_SYSTEM },
+          { role: "user", content: userText },
+        ],
+      });
+      replyText = completion.choices[0]?.message?.content?.trim() || "Standing by, sir.";
+    } catch (e) {
+      console.error("LLM error:", e);
+      replyText = "Intelligence layer temporarily unavailable, sir.";
+    }
 
-    const text = completion.choices[0]?.message?.content || "I am Jarvis.";
-
-    // Text → speech
-    const speech = await client.audio.speech.create({
-      model: "gpt-4o-mini-tts",
-      voice: "alloy",
-      input: text,
-    });
-
-    const audioBuffer = Buffer.from(await speech.arrayBuffer());
-    const audioBase64 = audioBuffer.toString("base64");
+    // Step 3: TTS — convert JARVIS reply to speech
+    let audioBase64 = null;
+    try {
+      const speech = await client.audio.speech.create({
+        model: "tts-1",
+        voice: "onyx",   // deep authoritative male voice
+        input: replyText,
+        speed: 0.95,
+      });
+      const audioBuffer = Buffer.from(await speech.arrayBuffer());
+      audioBase64 = audioBuffer.toString("base64");
+    } catch (e) {
+      console.error("TTS error:", e);
+      // Non-fatal — return text without audio
+    }
 
     res.status(200).json({
-      text,
-      audio: audioBase64,
+      transcript: userText,
+      text: replyText,
+      audio: audioBase64,  // base64 mp3, null if TTS failed
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Jarvis backend error." });
+    console.error("Jarvis handler error:", err);
+    res.status(500).json({ error: "JARVIS backend error: " + err.message });
+  } finally {
+    unlink(tempPath).catch(() => {});
   }
 }
