@@ -1,35 +1,30 @@
-# Aurora Core v2.0
-![License: ACOS‑NCOL](https://img.shields.io/badge/License-ACOS--NCOL-blue.svg)
-![Non‑Commercial](https://img.shields.io/badge/Use-Non--Commercial-red.svg)
-![Made by Garrett](https://img.shields.io/badge/Made_by-Garrett_McLain-black.svg)
+<div align="center">
 
-> **Seven-layer cognitive-energy ecosystem** — built entirely on an iPhone 16 Pro Max, by Garrett McLain, for his son Zachary Lee McLain (born April 13, 2026).
+# AURORA CORE OS
+### v2.0 · McLain Systems
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-aurora--core--3j6h.vercel.app-00ffc8?style=flat-square)](https://aurora-core-3j6h.vercel.app)
-[![License](https://img.shields.io/badge/license-MIT-9b5de5?style=flat-square)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?style=flat-square)](https://typescriptlang.org)
-[![TurnBot Patent](https://img.shields.io/badge/TurnBot-USPTO%20%2364%2F022%2C558-ffd60a?style=flat-square)](https://turnbot.org)
+**Hybrid cognitive engine for energy, biometrics, and environment.**  
+REST API · WebSocket · Webhooks · AI Chat · TypeScript + Python SDKs
 
----
+[![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/T3a165/Aurora-Core)
 
-## What Is Aurora Core?
+[Live Demo](https://aurora-core-3j6h.vercel.app) · [API Docs](aurora-core-os/docs/api-reference.md) · [Dev Portal](https://aurora-core-3j6h.vercel.app/#/dev)
 
-Aurora Core is not a dashboard. It is a **closed-loop AI platform** that merges:
-
-- **Human biology** (HRV, SpO₂, stress, sleep)
-- **Home energy infrastructure** (solar, battery, grid, circuits)
-- **Physical device control** (TurnBot actuators via Matter 1.5 / BLE)
-- **Predictive intelligence** (Monte Carlo simulation, agent consensus)
-
-All seven cognitive layers run continuously — ingesting signals, reasoning about tradeoffs, and taking real-world action through TurnBot hardware.
+</div>
 
 ---
 
-## Live Demo
+## What is Aurora?
 
-**[aurora-core-3j6h.vercel.app](https://aurora-core-3j6h.vercel.app)**
+Aurora Core OS is a real-time cognitive engine that manages three domains of a connected environment:
 
-Sign up for an account or use the demo. God Mode: `garrettmclain96@gmail.com`
+| Domain | Sensors | Score contribution |
+|---|---|---|
+| **Energy** | Solar, load, battery SoC, grid tariff | Demand/supply balance, self-consumption, cost |
+| **Biometrics** | HR, HRV, stress (0–100) | Strain detection — non-medical, conservative |
+| **Environment** | Temp, humidity, CO₂ ppm, PM2.5 | Comfort and air-quality safety |
+
+It computes a **System Score (0–100)**, generates human-readable **signals**, and issues **device actions** — automatically, in real time, with every incoming sensor reading.
 
 ---
 
@@ -37,164 +32,158 @@ Sign up for an account or use the demo. God Mode: `garrettmclain96@gmail.com`
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    AURORA CORE v2.0                          │
-│              7-Layer Cognitive-Energy Stack                  │
-├─────────────────────────────────────────────────────────────┤
-│  L7  Optimization Loop    ∞ retrain · A/B eval · drift det  │
-│  L6  Physical Execution   TurnBot Matter 1.5 / Thread / BLE  │
-│  L5  Decision Orchestration  Priority weighting · constraints│
-│  L4  Predictive Simulation   Monte Carlo · TFT forecasting   │
-│  L3  Cognitive Core       Health · Energy · Behavior · Env   │
-│  L2  Signal Normalization Kalman filter · drift detection    │
-│  L1  Bio Ingestion        Biometrics · weather · AMI · BLE   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### L3 Agent Consensus Priority
-```
-Health Agent (highest) → Energy Agent → Behavior Agent → Environment Agent
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 19 + TypeScript + Vite 7 |
-| Styling | Tailwind CSS 4 + custom design system |
-| Animation | Framer Motion 12 |
-| Charts | Recharts 2 |
-| Routing | Wouter |
-| AI Inference | Groq (Llama 3.1) / Anthropic Claude |
-| Auth | Local auth with role system (god/admin/viewer) |
-| Hardware | TurnBot Mini/Pro/Hub (BLE 5.3 / Matter 1.5) |
-| Deployment | Vercel (serverless functions) |
-| CI/CD | GitHub → Vercel auto-deploy |
-
----
-
-## Project Structure
-
-```
-src/
-├── types/          ← All TypeScript interfaces (single source of truth)
-├── hooks/          ← Custom React hooks (useRealtime, etc.)
-├── services/       ← Agent logic, API calls, business logic
-├── utils/          ← Pure calculation functions (energy, biometrics)
-├── components/     ← Reusable UI components
-│   ├── NeuralCore.tsx      ← Canvas-rendered 4-agent neural diagram
-│   ├── HealthPanel.tsx     ← Live ECG + biometric gauges
-│   ├── EnergyPanel.tsx     ← Solar/battery/grid flow
-│   ├── BehaviorPanel.tsx   ← Activity patterns + meditation
-│   ├── EnvironmentPanel.tsx← Air quality + ambient sensors
-│   ├── Layout.tsx          ← Navigation shell (desktop + mobile)
-│   ├── BootSplash.tsx      ← Cinematic startup sequence
-│   └── AuthScreen.tsx      ← Login / signup
-├── pages/          ← Route-level page components
-└── lib/            ← Seed data, toast, auth context
-api/
-└── chat.ts         ← Vercel serverless function (Groq + Anthropic)
+│  External devices / sensors / wearables                     │
+│  (Enphase, Tesla, Ecobee, Home Assistant, MQTT, Shelly...)  │
+└────────────────────┬────────────────────────────────────────┘
+                     │ POST /v1/events
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Aurora Core Engine (Node/TypeScript)                       │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Ingest → State (Redis) → Score + Signals → Actions  │   │
+│  │  + Trend detection  + Predictive score               │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  REST API  ·  WebSocket stream  ·  Webhooks                 │
+└──────────┬──────────────────────────────────────────────────┘
+           │
+    ┌──────┴──────────────────────────────┐
+    │                                     │
+    ▼                                     ▼
+PostgreSQL (events, insights,         Redis (live state,
+ actions, audit, webhooks)            pub/sub, rate limit)
+    │
+    ▼
+┌──────────────────────────────────────────────────────────┐
+│  Frontends                                               │
+│  Aurora Console (Next.js) · Aurora Vite App (deployed)  │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Getting Started
+## Quick Start (15 minutes)
 
 ```bash
 git clone https://github.com/T3a165/Aurora-Core.git
-cd Aurora-Core
-npm install
-
-# Create environment file
-cp .env.example .env.local
-# Add your GROQ_API_KEY (free at console.groq.com)
-
-npm run dev
+cd Aurora-Core/aurora-core-os
+docker compose up -d          # Postgres + Redis
+cd apps/api
+pnpm install
+pnpm prisma migrate dev
+pnpm seed                     # prints installation ID + API key
+pnpm dev                      # → http://localhost:4000
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Send your first event:
+```bash
+curl -X POST http://localhost:4000/v1/events \
+  -H "Authorization: Bearer ak_..." \
+  -H "Content-Type: application/json" \
+  -d '{"domain":"ENERGY","kind":"solar_w","value":1240}'
+# → {"accepted":1,"results":[{"score":87,"trend":"stable"}]}
+```
+
+No sensors? Inject demo data instantly:
+```bash
+curl -X POST http://localhost:4000/v1/simulate \
+  -H "Authorization: Bearer ak_..." \
+  -d '{"scenario":"stress"}'
+```
 
 ---
 
-## Key Engineering Decisions
+## SDKs
 
-### Before → After Refactoring
+**Node/TypeScript**
+```ts
+import { AuroraClient } from "@aurora/sdk";
+const aurora = new AuroraClient({ baseUrl: "http://localhost:4000", apiKey: "ak_..." });
 
-| Before | After |
+await aurora.sendEvent({ domain: "ENERGY", kind: "solar_w", value: 1240 });
+const { current } = await aurora.getInsights();
+console.log(`Score: ${current.score}/100 (${current.trend})`);
+
+const off = aurora.subscribe(msg => {
+  if (msg.type === "action") console.log("Aurora says:", msg.action.command);
+});
+```
+
+**Python**
+```python
+from aurora import AuroraClient
+aurora = AuroraClient(api_key="ak_...", base_url="http://localhost:4000")
+
+aurora.send_event({"domain": "ENERGY", "kind": "solar_w", "value": 1240})
+data = aurora.get_insights()
+print(f"Score: {data['current']['score']}/100")
+```
+
+---
+
+## API Highlights
+
+| Endpoint | Description |
 |---|---|
-| Types inline everywhere | Central `src/types/index.ts` |
-| Energy math in components | `src/utils/energy.ts` pure functions |
-| Agent prompts hardcoded | `src/services/agentService.ts` |
-| `useRealtime` in `src/lib/` | `src/hooks/useRealtime.ts` with JSDoc |
-| No README | This document |
-| Monolithic CSS | Semantic design tokens |
+| `POST /v1/events` | Send sensor readings (single or batch) |
+| `GET /v1/state` | Current live state |
+| `GET /v1/insights` | Score + signals + trend + prediction |
+| `GET /v1/history` | Event time-series query |
+| `POST /v1/devices/:id/command` | Issue device command |
+| `POST /v1/config/mode` | Switch energy/health/habitat mode |
+| `POST /v1/chat` | AI natural language query (Claude-powered) |
+| `POST /v1/webhooks` | Register webhook endpoint |
+| `POST /v1/simulate` | Inject demo scenario |
+| `GET /v1/export` | Full installation snapshot |
+| `GET /health` | Health check (DB + Redis) |
+| `GET /metrics` | Prometheus metrics |
 
-### Design Principles
-- **Separation of concerns** — types, utils, services, hooks, components all separate
-- **Pure functions for math** — `calcCO2Avoided()`, `calcWellnessScore()` are testable
-- **Single source of truth** — all interfaces in `types/index.ts`
-- **Progressive enhancement** — works without API key (demo data), better with it
+Full docs: [aurora-core-os/docs/api-reference.md](aurora-core-os/docs/api-reference.md)
 
 ---
 
-## TurnBot Integration
+## Modes
 
-Aurora Core's L6 execution layer controls TurnBot smart actuators:
-
-| Model | Torque | Protocol | Use Case |
+| Mode | Energy weight | Bio weight | Env weight |
 |---|---|---|---|
-| TurnBot Mini | 5 Nm | BLE 5.3 | HVAC valves, thermostats |
-| TurnBot Pro | 25 Nm | Matter 1.5 | Main shutoffs, heavy valves |
-| TurnBot Hub | Mesh | ESP32-C6 | 32-node network controller |
-
-**Patent**: USPTO Provisional #64/022,558 (filed March 31, 2026)
+| **Energy Guardian** | 60% | 15% | 25% |
+| **Health Sentinel** | 15% | 60% | 25% |
+| **Habitat Optimizer** | 33% | 33% | 34% |
 
 ---
 
-## Roadmap
+## Repo Structure
 
-- [ ] Real ESP32 sensor WebSocket ingest (replace simulated data)
-- [ ] React Native mobile app
-- [ ] Green Button API (utility billing integration)
-- [ ] OpenADR 2.0b demand response
-- [ ] Supabase backend (replace localStorage auth)
-- [ ] Jest test suite for utility functions
-- [ ] Biometric wearable SDK integration (Apple Health, Garmin)
+```
+Aurora-Core/
+├── aurora-core-os/           # Full production platform
+│   ├── apps/
+│   │   ├── api/              # Express + Prisma + Redis backend
+│   │   ├── web/              # Next.js console frontend
+│   │   └── jarvis/           # Voice AI companion (experimental)
+│   ├── packages/
+│   │   ├── sdk-node/         # TypeScript SDK
+│   │   └── sdk-python/       # Python SDK
+│   └── docs/                 # API reference, concepts, security
+├── src/                      # Deployed Vite app (aurora-core-3j6h.vercel.app)
+│   ├── pages/
+│   │   ├── Dashboard.tsx
+│   │   ├── DevPortal.tsx     # ← Developer Portal (new)
+│   │   └── ...
+│   └── components/
+└── api/                      # Vercel serverless functions
+    └── chat.ts               # Claude AI proxy
+```
 
 ---
 
-## The Why
+## Contributing
 
-> *"I don't have much right now. But I have you, Zachary. And I have a plan. And I have today. That's enough to start."*
->
-> — Garrett Lee McLain, Jamaica Beach, Texas, 2026
+Attribution: Original C++ (TriforceSystem) and Verilog (ARCHANGEL_CORE) by Alexander Colclough (@Lex-Col), used with permission.
 
-**Jonas Lee → Darrell Lee → Garrett Lee → Zachary Lee**
-
-The line continues. The name carries forward. Always.
+Safety note: Bio scoring is intentionally non-medical and conservative. Aurora produces action *records* — your device adapter decides whether to execute them. Never use Aurora as a clinical device.
 
 ---
 
-Built with purpose · McLain Systems · Jamaica Beach, Texas · 2026
-## License
-## 📄 License
-
-Aurora Core OS is released under the Aurora Core OS – Non‑Commercial Open License (ACOS‑NCOL 1.0).
-
-This means:
-
-- ✔ Free for personal use  
-- ✔ Free for educational use  
-- ✔ Free for research and experimentation  
-- ✔ Free to modify and redistribute (non‑commercially)  
-- ✘ Not allowed for commercial use  
-- ✘ Not allowed in paid products or services  
-- ✘ Not allowed in revenue‑generating environments  
-- ✘ Not allowed for business or organizational deployment  
-
-Commercial licensing is available upon request.
-
-**Copyright © Garrett McLain**
-
-See the full LICENSE file for complete details.
+<div align="center">
+Built with purpose. · McLain Systems · 2025
+</div>

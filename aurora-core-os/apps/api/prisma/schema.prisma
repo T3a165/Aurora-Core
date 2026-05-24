@@ -21,7 +21,8 @@ model ApiKey {
   installationId String?
   installation   Installation? @relation(fields: [installationId], references: [id])
   hashedKey      String        @unique
-  prefix         String        // first 8 chars, for display
+  prefix         String
+  label          String        @default("Default")
   scopes         String[]      @default(["events:write","state:read","actions:write"])
   createdAt      DateTime      @default(now())
   lastUsedAt     DateTime?
@@ -43,6 +44,7 @@ model Installation {
   apiKeys     ApiKey[]
   mode        ModeConfig?
   audits      AuditLog[]
+  webhooks    Webhook[]
 }
 
 enum Domain {
@@ -56,7 +58,7 @@ model Sensor {
   installationId String
   installation   Installation @relation(fields: [installationId], references: [id])
   domain         Domain
-  kind           String       // e.g. "solar_w", "hr_bpm", "co2_ppm"
+  kind           String
   unit           String
   meta           Json?
   events         Event[]
@@ -66,7 +68,7 @@ model Device {
   id             String       @id @default(cuid())
   installationId String
   installation   Installation @relation(fields: [installationId], references: [id])
-  kind           String       // "turnbot" | "light" | "hvac" | "valve" | ...
+  kind           String
   label          String
   state          Json         @default("{}")
   online         Boolean      @default(true)
@@ -85,6 +87,7 @@ model Event {
   payload        Json?
   ts             DateTime     @default(now())
   @@index([installationId, ts])
+  @@index([installationId, domain])
 }
 
 enum ActionStatus {
@@ -113,9 +116,9 @@ model Insight {
   id             String       @id @default(cuid())
   installationId String
   installation   Installation @relation(fields: [installationId], references: [id])
-  score          Int          // 0-100
-  breakdown      Json         // { energy, biometric, environment, mode }
-  signals        Json         // [{ kind, severity, message, recommendation }]
+  score          Int
+  breakdown      Json
+  signals        Json
   ts             DateTime     @default(now())
   @@index([installationId, ts])
 }
@@ -129,13 +132,28 @@ model ModeConfig {
   updatedAt      DateTime     @updatedAt
 }
 
+model Webhook {
+  id             String       @id @default(cuid())
+  installationId String
+  installation   Installation @relation(fields: [installationId], references: [id])
+  url            String
+  secret         String
+  events         String[]     @default(["*"])
+  label          String       @default("")
+  enabled        Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  lastFiredAt    DateTime?
+  lastStatus     Int?
+}
+
 model AuditLog {
   id             String       @id @default(cuid())
   installationId String
   installation   Installation @relation(fields: [installationId], references: [id])
-  actor          String       // "api_key:<prefix>" or "engine"
-  action         String       // "device.command" | "mode.set" | "key.rotate"
+  actor          String
+  action         String
   target         String?
   meta           Json?
   ts             DateTime     @default(now())
+  @@index([installationId, ts])
 }

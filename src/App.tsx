@@ -22,6 +22,7 @@ import { Legacy } from './pages/Legacy'
 import { Settings } from './pages/Settings'
 import { ArchangelPanel } from './pages/ArchangelPanel'
 import { PillarsPanel } from './pages/PillarsPanel'
+import { DevPortal } from './pages/DevPortal'
 import SovereignEngine from './components/SovereignEngine'
 import { JarvisPanel } from './pages/JarvisPanel'
 import JarvisOrb from './components/JarvisOrb'
@@ -46,6 +47,7 @@ function AppInner() {
         <Route path="/chat" component={AIChat} />
         <Route path="/alerts" component={Alerts} />
         <Route path="/integrations" component={Integrations} />
+        <Route path="/dev" component={DevPortal} />
         <Route path="/archangel" component={ArchangelPanel} />
         <Route path="/pillars" component={PillarsPanel} />
         <Route path="/sovereign" component={SovereignEngine} />

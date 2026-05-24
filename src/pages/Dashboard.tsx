@@ -7,6 +7,7 @@ import { HealthPanel } from '../components/HealthPanel'
 import { EnergyPanel } from '../components/EnergyPanel'
 import { BehaviorPanel } from '../components/BehaviorPanel'
 import { EnvironmentPanel } from '../components/EnvironmentPanel'
+import { ScoreHistoryChart } from '../components/ScoreHistoryChart'
 import { PageTransition } from '../components/PageTransition'
 import { useRealtime } from '../hooks/useRealtime'
 import { useSystemAlerts } from '../lib/toast'
@@ -148,6 +149,7 @@ export function Dashboard() {
           {/* Environment - bottom right */}
           <div className="overflow-hidden" style={{ background: 'rgba(57,255,20,0.03)' }}>
             <EnvironmentPanel metrics={live} />
+            <ScoreHistoryChart metrics={live} />
           </div>
         </div>
 
@@ -172,6 +174,7 @@ export function Dashboard() {
           {/* Environment */}
           <div style={{ background: 'rgba(57,255,20,0.03)' }}>
             <EnvironmentPanel metrics={live} />
+            <ScoreHistoryChart metrics={live} />
           </div>
           {/* Command links */}
           <div className="p-4 space-y-2">

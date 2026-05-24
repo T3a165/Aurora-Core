@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter'
 import {
   LayoutDashboard, Layers, Brain, Zap, Battery, FlaskConical,
   Radio, MessageSquare, Bell, ChevronLeft, ChevronRight,
-  Activity, Menu, X, Heart, BookOpen, ExternalLink, Settings, Crown, Shield, Scale, Cpu, Bot,
+  Activity, Menu, X, Heart, BookOpen, ExternalLink, Settings, Crown, Shield, Scale, Cpu, Bot, Code2,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { AuroraBackground } from './AuroraBackground'
@@ -22,6 +22,7 @@ const NAV = [
   { path: '/chat',         icon: MessageSquare,   label: 'AI Chat'      },
   { path: '/alerts',       icon: Bell,            label: 'Alerts'       },
   { path: '/integrations', icon: ExternalLink,    label: 'Integrations', divider: true },
+  { path: '/dev',          icon: Code2,           label: 'Dev Portal'   },
   { path: '/archangel',    icon: Shield,          label: 'ARCHANGEL'    },
   { path: '/pillars',      icon: Scale,           label: 'XIII PILLARS' },
   { path: '/sovereign',    icon: Cpu,             label: 'SOVEREIGN'    },

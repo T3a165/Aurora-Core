@@ -1,5 +1,6 @@
 export type Domain = "ENERGY" | "BIOMETRIC" | "ENVIRONMENT";
-export type Mode = "energy_guardian" | "health_sentinel" | "habitat_optimizer";
+export type Mode   = "energy_guardian" | "health_sentinel" | "habitat_optimizer";
+export type Trend  = "improving" | "stable" | "degrading";
 
 export interface EnergyState {
   loadW: number; solarW: number; batterySoc: number; gridPriceCents: number;
@@ -16,9 +17,9 @@ export interface InstallationState {
 }
 
 export interface Signal {
-  kind: string;
+  kind:     string;
   severity: "info" | "warn" | "alert";
-  message: string;
+  message:  string;
   recommendation?: string;
 }
 
@@ -27,8 +28,10 @@ export interface ScoreBreakdown {
 }
 
 export interface DecisionResult {
-  score: number;
-  breakdown: ScoreBreakdown;
-  signals: Signal[];
-  actions: Array<{ deviceKind: string; command: string; args?: any; reason: string }>;
+  score:          number;
+  breakdown:      ScoreBreakdown;
+  signals:        Signal[];
+  actions:        Array<{ deviceKind: string; command: string; args?: any; reason: string }>;
+  trend:          Trend;
+  predictedScore: number;
 }
