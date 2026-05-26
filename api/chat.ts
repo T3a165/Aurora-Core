@@ -111,7 +111,7 @@ export default async function handler(req: Request): Promise<Response> {
         })
         return new Response(stream, { headers: { ...CORS, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
       }
-    } catch (e) { console.error('Anthropic error:', e) }
+    } catch (_e) { /* Anthropic request failed — fall through to Groq */ }
   }
 
   // ── Groq (fallback) ──────────────────────────────────────────────────────

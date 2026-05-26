@@ -334,10 +334,7 @@ export class ArchangelCore {
       this.metrics.entropySpike = this.metrics.totalAnnihilations > threshold
 
       if (this.metrics.entropySpike) {
-        console.warn(
-          `[ARCHANGEL] CRITICAL: TULPIT NEXUS SATURATED. ENTROPY SPIKE. ` +
-          `Cycle ${this.cycleId} | Annihilations: ${this.metrics.totalAnnihilations}`,
-        )
+        // entropy spike surfaced via returned trace object
       }
       return { packet: null, trace }
     }

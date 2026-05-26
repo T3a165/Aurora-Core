@@ -51,7 +51,7 @@ export default function Jarvis() {
       mediaRecorderRef.current.start();
       setListening(true);
     } catch (err) {
-      console.error(err);
+      // error surfaced to UI via setResponse below
       setResponse("Microphone access failed. Check browser permissions.");
     }
   }

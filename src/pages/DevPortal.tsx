@@ -1,3 +1,4 @@
+import React from 'react'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PageTransition } from '../components/PageTransition'
@@ -127,7 +128,7 @@ function EndpointCard({
 
 // ── Collapsible section ──────────────────────────────────────────────────────
 function Section({ title, icon: Icon, children, color = '#00ffc8', defaultOpen = false }: {
-  title: string; icon: any; children: React.ReactNode; color?: string; defaultOpen?: boolean
+  title: string; icon: React.ElementType; children: React.ReactNode; color?: string; defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -179,16 +180,16 @@ function QuickStart() {
         </div>
         <div className="flex-1 space-y-3 pt-0.5">
           <h3 className="display font-bold text-sm text-[var(--color-text)]">Boot the stack</h3>
-          <CodeBlock lang="bash" code={`# Clone and start the platform
-git clone https://github.com/T3a165/Aurora-Core.git
-cd Aurora-Core/aurora-core-os
-
-docker compose up -d          # Postgres + Redis
-cd apps/api
-pnpm install
-pnpm prisma migrate dev
-pnpm seed                     # prints installation ID + API key
-pnpm dev                      # API on http://localhost:4000`} />
+          <CodeBlock lang="bash" code={`# Aurora Core deploys entirely on Vercel — no local setup needed
+# 1. Fork: github.com/T3a165/Aurora-Core  (tap Fork in the GitHub mobile app)
+# 2. Import to Vercel: vercel.com/new  → Import Git Repository
+# 3. Set environment variables in Vercel dashboard:
+#      ANTHROPIC_API_KEY   = sk-ant-...
+#      INGEST_SECRET       = your-esp32-secret   (optional)
+# 4. Deploy — your live URL is ready in ~90 seconds
+#
+# ESP32-C6 firmware: POST to https://your-app.vercel.app/api/ingest
+# That's it. No Docker, no Node, no terminal required.`} />
           <p className="text-[11px] text-[var(--color-muted)]">The seed prints your installation ID and a one-time API key. Store it — it's hashed in the DB.</p>
         </div>
       </div>

@@ -47,8 +47,8 @@ const MAX_POINTS = 60
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: any[]
-  label?:   any
+  payload?: Array<{ payload: Point }>
+  label?: string
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {

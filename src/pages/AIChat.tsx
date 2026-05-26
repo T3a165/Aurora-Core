@@ -1,3 +1,4 @@
+import React from 'react'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2, Zap, Activity, Heart, Wind, Battery, Thermometer, RefreshCw } from 'lucide-react'
@@ -34,7 +35,7 @@ function LiveBar({ label, value, max, color, unit }: {
 }
 
 function StatChip({ icon: Icon, value, label, color }: {
-  icon: any; value: string; label: string; color: string
+  icon: React.ElementType; value: string; label: string; color: string
 }) {
   return (
     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border"

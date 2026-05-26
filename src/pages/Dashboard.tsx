@@ -6,7 +6,7 @@ import { NeuralCore } from '../components/NeuralCore'
 import { AuroraIntelligence } from '../components/AuroraIntelligence'
 import { HealthPanel } from '../components/HealthPanel'
 import { EnergyPanel } from '../components/EnergyPanel'
-import { BehaviorPanel } from '../components/BehaviorPanel'
+import { RelayControl } from '../components/RelayControl'
 import { EnvironmentPanel } from '../components/EnvironmentPanel'
 import { PageTransition } from '../components/PageTransition'
 import { useRealtime } from '../hooks/useRealtime'
@@ -152,7 +152,7 @@ export function Dashboard() {
             <EnergyPanel metrics={live} />
           </div>
           <div style={{ background: 'rgba(155,93,229,0.03)' }}>
-            <BehaviorPanel metrics={live} />
+            <RelayControl metrics={live} />
           </div>
           <div style={{ background: 'rgba(57,255,20,0.03)' }}>
             <EnvironmentPanel metrics={live} />
